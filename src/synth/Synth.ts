@@ -7,7 +7,7 @@ export default class Synth {
     private static limiter: DynamicsCompressorNode;
     private static volume: GainNode;
     private static config: SynthConfig;
-    private static activeNotes: Map<number, [OscillatorNode, GainNode]> = new Map();
+    private static activeNotes: Map<number, [OscillatorNode, GainNode, GainNode]> = new Map();
 
     constructor() {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
@@ -31,10 +31,10 @@ export default class Synth {
             waveForm: "square",
             unisons: [{ enabled: false }, { enabled: false }], // by default have 2 disabled
             volumeEnvelope: {
-                attack: 0.01,
-                decay: 0,
-                sustain: 1,
-                release: 0.03,
+                attack: 1,
+                decay: 1,
+                sustain: 0.5,
+                release: 1,
             },
             filterEnvelope: {
                 attack: 0,
@@ -126,26 +126,52 @@ export default class Synth {
     static playNote(note: number, velocity: number) {
         const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
         const velocityGain: GainNode = Synth.audioContext.createGain();
+        const adsrGain: GainNode = Synth.audioContext.createGain();
 
         oscillator.type = this.config.waveForm;
         oscillator.frequency.value = Synth.midiNoteToFrequency(note);
         oscillator.connect(velocityGain);
 
         velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
-        velocityGain.connect(Synth.audioContext.destination);
+        velocityGain.connect(adsrGain);
+
+        const now: number = Synth.audioContext.currentTime;
+        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack * STAGE_MAX_TIME;
+        const decayDuration: number = Synth.config.volumeEnvelope.decay * STAGE_MAX_TIME;
+        adsrGain.gain.setValueAtTime(0, now);
+        adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
+        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
+            attackEndTime, decayDuration
+        );
+        adsrGain.connect(Synth.audioContext.destination);
 
         oscillator.start();
-        Synth.activeNotes.set(note, [oscillator, velocityGain]);
+        Synth.activeNotes.set(note, [oscillator, velocityGain, adsrGain]);
     }
 
     static releaseNote(note: number) {
-        const activeNote: [OscillatorNode, GainNode] | undefined = Synth.activeNotes.get(note);
+        const activeNote: [OscillatorNode, GainNode, GainNode] | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
-            activeNote[0].stop();
-            activeNote[0].disconnect();
-            activeNote[1].disconnect();
+            const oscillator: OscillatorNode = activeNote[0];
+            const velocityGain: GainNode = activeNote[1]; 
+            const adsrGain: GainNode = activeNote[2];
             Synth.activeNotes.delete(note);
+
+            const now: number = Synth.audioContext.currentTime;
+            const releaseDuration: number = Synth.config.volumeEnvelope.release * STAGE_MAX_TIME;
+            const releaseEndTime: number = now + releaseDuration;
+
+            adsrGain.gain.cancelScheduledValues(now);
+            adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
+            adsrGain.gain.linearRampToValueAtTime(0, releaseEndTime);
+
+            setTimeout(() => {
+                oscillator.stop();
+                oscillator.disconnect();
+                velocityGain.disconnect();
+                adsrGain.disconnect();
+            }, 1000 * releaseDuration);
         }
     }
 }
