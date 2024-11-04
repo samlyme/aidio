@@ -7,6 +7,11 @@ export type UnisonConfig = { enabled: false } | {
     gain: number,
 };
 
+export type FilterConfig = {
+    frequency: number,
+    resonance: number,
+}
+
 export type ADSREnvelope = {
     attack: number,
     decay: number,
@@ -18,6 +23,8 @@ export type SynthConfig = {
     waveForm: WaveForm,
 
     unisons: UnisonConfig[],
+
+    filter: FilterConfig,
 
     volumeEnvelope: ADSREnvelope,
 

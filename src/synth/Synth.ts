@@ -14,6 +14,7 @@ export default class Synth {
 
         Synth.config = {
             waveForm: "triangle",
+
             unisons: [
                 { 
                     enabled: true,
@@ -24,12 +25,18 @@ export default class Synth {
                 { enabled: false }
             ],
 
+            filter: {
+                frequency: 5000,
+                resonance: 30,
+            },
+
             volumeEnvelope: {
                 attack: 1 * MAX_STAGE_TIME,
                 decay: 1 * MAX_STAGE_TIME,
                 sustain: 0.5,
                 release: 1 * MAX_STAGE_TIME,
             },
+
             filterEnvelope: {
                 attack: 1 * MAX_STAGE_TIME,
                 decay: 1 * MAX_STAGE_TIME,
@@ -134,8 +141,8 @@ export default class Synth {
         adsrGain.connect(filter);
 
         filter.type = "lowpass";
-        filter.frequency.value = 5000; // TODO: change filter freq
-        filter.Q.value = 30;
+        filter.frequency.value = Synth.config.filter.frequency;
+        filter.Q.value = Synth.config.filter.resonance;
         filter.connect(Synth.volume);
 
         oscillator.start();
