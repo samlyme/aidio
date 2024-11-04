@@ -1,4 +1,4 @@
-import { ADSREnvelope, SynthConfig, UnisonConfig } from "./Types";
+import { ADSREnvelope, NoteChain, SynthConfig, UnisonConfig } from "./Types";
 
 const STAGE_MAX_TIME = 2;
 
@@ -7,7 +7,7 @@ export default class Synth {
     private static limiter: DynamicsCompressorNode;
     private static volume: GainNode;
     private static config: SynthConfig;
-    private static activeNotes: Map<number, [OscillatorNode[], GainNode, GainNode]> = new Map();
+    private static activeNotes: Map<number, NoteChain> = new Map();
 
     constructor() {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
@@ -94,6 +94,7 @@ export default class Synth {
         const unisons: OscillatorNode[] = [];
         const velocityGain: GainNode = Synth.audioContext.createGain();
         const adsrGain: GainNode = Synth.audioContext.createGain();
+        const filter: BiquadFilterNode = Synth.audioContext.createBiquadFilter();
 
         oscillator.type = this.config.waveForm;
         oscillator.frequency.value = Synth.midiNoteToFrequency(note);
@@ -126,23 +127,28 @@ export default class Synth {
         adsrGain.gain.setValueAtTime(0, now);
         adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
         adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
-            attackEndTime, decayDuration
-        );
-        adsrGain.connect(Synth.volume);
+            attackEndTime, decayDuration);
+        adsrGain.connect(filter);
+
+        filter.type = "lowpass";
+        filter.frequency.value = 5000; // TODO: change filter freq
+        filter.Q.value = 30;
+        filter.connect(Synth.volume);
 
         oscillator.start();
         unisons.forEach((unison: OscillatorNode) => unison.start());
         
-        Synth.activeNotes.set(note, [[oscillator, ...unisons], velocityGain, adsrGain]);
+        Synth.activeNotes.set(note, [[oscillator, ...unisons], velocityGain, adsrGain, filter]);
     }
 
     static releaseNote(note: number) {
-        const activeNote: [OscillatorNode[], GainNode, GainNode] | undefined = Synth.activeNotes.get(note);
+        const activeNote: NoteChain | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
             const oscillators: OscillatorNode[] = activeNote[0];
             const velocityGain: GainNode = activeNote[1]; 
             const adsrGain: GainNode = activeNote[2];
+            const filter: BiquadFilterNode = activeNote[3];
             Synth.activeNotes.delete(note);
 
             const now: number = Synth.audioContext.currentTime;
@@ -160,6 +166,7 @@ export default class Synth {
                 })
                 velocityGain.disconnect();
                 adsrGain.disconnect();
+                filter.disconnect();
             }, 1000 * releaseDuration);
         }
     }
