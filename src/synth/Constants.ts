@@ -1,0 +1,1 @@
+export const MAX_STAGE_TIME = 2
