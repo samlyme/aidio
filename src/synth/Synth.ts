@@ -13,20 +13,6 @@ export default class Synth {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
         Synth.audioContext = new AudioContext();
 
-        // master limiter for the sake of the user
-        Synth.limiter = Synth.audioContext.createDynamicsCompressor();
-        Synth.limiter.threshold.value = -13; // Set threshold in dB
-        Synth.limiter.ratio.value = 20; // Set compression ratio
-        Synth.limiter.attack.value = 0.005; // Set attack time in seconds
-        Synth.limiter.release.value = 0.05; // Set release time in seconds
-        Synth.limiter.knee.value = 0; // Set knee in dB
-        Synth.limiter.connect(Synth.audioContext.destination)
-
-        // master volume control
-        Synth.volume = Synth.audioContext.createGain();
-        // let the user adjust later
-        Synth.volume.gain.value = 0.8;
-
         Synth.config = {
             waveForm: "triangle",
             unisons: [
@@ -52,6 +38,21 @@ export default class Synth {
                 release: 0,
             }
         }
+
+        Synth.volume = Synth.audioContext.createGain();
+        Synth.limiter = Synth.audioContext.createDynamicsCompressor();
+        
+        // master volume control
+        Synth.volume.gain.value = 0.8;
+        Synth.volume.connect(Synth.limiter);
+
+        // master limiter for the sake of the user
+        Synth.limiter.threshold.value = -3; // Set threshold in dB
+        Synth.limiter.ratio.value = 20; // Set compression ratio
+        Synth.limiter.attack.value = 0.005; // Set attack time in seconds
+        Synth.limiter.release.value = 0.05; // Set release time in seconds
+        Synth.limiter.knee.value = 0; // Set knee in dB
+        Synth.limiter.connect(Synth.audioContext.destination)
     }
 
     static setVolume(value: number) {
@@ -127,7 +128,7 @@ export default class Synth {
         adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
             attackEndTime, decayDuration
         );
-        adsrGain.connect(Synth.audioContext.destination);
+        adsrGain.connect(Synth.volume);
 
         oscillator.start();
         unisons.forEach((unison: OscillatorNode) => unison.start());
