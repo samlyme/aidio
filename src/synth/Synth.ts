@@ -57,6 +57,9 @@ export default class Synth {
             }
         }
 
+        // TODO: implement effects class, use builder pattern with chain
+        // - Generator function that takes in an array and returns a chain
+        // - Note source that connects to the effects chain 
         Synth.volume = Synth.audioContext.createGain();
         Synth.limiter = Synth.audioContext.createDynamicsCompressor();
 
