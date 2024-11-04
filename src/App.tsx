@@ -1,14 +1,19 @@
+import { useState } from "react"
 import Synth from "./synth/Synth"
+import InteractivePiano from "./components/InteractivePiano";
 
 function App() {
 
-  let synth: Synth;
+  const [ready, setReady] = useState<boolean>(false);
 
   return (
     <>
-    <button onClick={() => {
-      synth = new Synth()
-    }}>start</button>
+      {
+        ready ? <InteractivePiano/> :
+          <button onClick={() => { new Synth(); setReady(true); }}>
+            start
+          </button>
+      }
     </>
   )
 }
