@@ -1,6 +1,5 @@
+import { MAX_STAGE_TIME } from "./Constants";
 import { ADSREnvelope, NoteChain, SynthConfig, UnisonConfig } from "./Types";
-
-const STAGE_MAX_TIME = 2;
 
 export default class Synth {
     private static audioContext: AudioContext;
@@ -23,19 +22,19 @@ export default class Synth {
                     gain: 0.8,
                 }, 
                 { enabled: false }
-            ], // by default have 2 disabled
+            ],
 
             volumeEnvelope: {
-                attack: 1,
-                decay: 1,
+                attack: 1 * MAX_STAGE_TIME,
+                decay: 1 * MAX_STAGE_TIME,
                 sustain: 0.5,
-                release: 1,
+                release: 1 * MAX_STAGE_TIME,
             },
             filterEnvelope: {
-                attack: 0,
-                decay: 0,
-                sustain: 0,
-                release: 0,
+                attack: 1 * MAX_STAGE_TIME,
+                decay: 1 * MAX_STAGE_TIME,
+                sustain: 0.5,
+                release: 1 * MAX_STAGE_TIME,
             }
         }
 
@@ -68,23 +67,27 @@ export default class Synth {
     }
 
     static setVolumeEnvelope(config: ADSREnvelope) {
-        Object.values(config).forEach(
-            (value: number) => {
-                if (value < 0 || value > 1) 
-                    throw new Error("Invalid ADSR config");
-            }
-        )
+        if (
+            config.attack > MAX_STAGE_TIME || config.attack < 0 ||
+            config.decay > MAX_STAGE_TIME || config.decay < 0 ||
+            config.release > MAX_STAGE_TIME || config.release < 0
+        ) throw new Error("Invalid times");
+
+        if (config.sustain < 0 || config.sustain > 1) 
+            throw new Error("Invalid sustain")
 
         Synth.config.volumeEnvelope = config;
     }
 
     static setFilterEnvelop(config: ADSREnvelope) {
-        Object.values(config).forEach(
-            (value: number) => {
-                if (value < 0 || value > 1) 
-                    throw new Error("Invalid ADSR config");
-            }
-        )
+        if (
+            config.attack > MAX_STAGE_TIME || config.attack < 0 ||
+            config.decay > MAX_STAGE_TIME || config.decay < 0 ||
+            config.release > MAX_STAGE_TIME || config.release < 0
+        ) throw new Error("Invalid times");
+
+        if (config.sustain < 0 || config.sustain > 1) 
+            throw new Error("Invalid sustain")
 
         Synth.config.filterEnvelope = config;
     }
@@ -122,8 +125,8 @@ export default class Synth {
         velocityGain.connect(adsrGain);
 
         const now: number = Synth.audioContext.currentTime;
-        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack * STAGE_MAX_TIME;
-        const decayDuration: number = Synth.config.volumeEnvelope.decay * STAGE_MAX_TIME;
+        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack;
+        const decayDuration: number = Synth.config.volumeEnvelope.decay;
         adsrGain.gain.setValueAtTime(0, now);
         adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
         adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
@@ -152,7 +155,7 @@ export default class Synth {
             Synth.activeNotes.delete(note);
 
             const now: number = Synth.audioContext.currentTime;
-            const releaseDuration: number = Synth.config.volumeEnvelope.release * STAGE_MAX_TIME;
+            const releaseDuration: number = Synth.config.volumeEnvelope.release;
             const releaseEndTime: number = now + releaseDuration;
 
             adsrGain.gain.cancelScheduledValues(now);
