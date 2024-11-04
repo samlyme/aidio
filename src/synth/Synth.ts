@@ -174,6 +174,10 @@ export default class Synth {
         }
     }
 
+    static getAudioContext(): AudioContext {
+        return Synth.audioContext;
+    }
+
     private static handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
         midiAccess.addEventListener("statechange", Synth.updateDevices);
 
