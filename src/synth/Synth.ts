@@ -58,25 +58,23 @@ export default class Synth {
     }
 
     static setVolumeEnvelope(config: ADSREnvelope) {
-        if (config.attack > STAGE_MAX_TIME
-            || config.decay > STAGE_MAX_TIME
-            || config.release > STAGE_MAX_TIME
-        ) throw new Error("Time too long");
-
-        if (config.sustain > 1 || config.sustain < 0) 
-            throw new Error("Invalid sustain")
+        Object.values(config).forEach(
+            (value: number) => {
+                if (value < 0 || value > 1) 
+                    throw new Error("Invalid ADSR config");
+            }
+        )
 
         Synth.config.volumeEnvelope = config;
     }
 
     static setFilterEnvelop(config: ADSREnvelope) {
-        if (config.attack > STAGE_MAX_TIME
-            || config.decay > STAGE_MAX_TIME
-            || config.release > STAGE_MAX_TIME
-        ) throw new Error("Time too long");
-
-        if (config.sustain > 1 || config.sustain < 0) 
-            throw new Error("Invalid sustain")
+        Object.values(config).forEach(
+            (value: number) => {
+                if (value < 0 || value > 1) 
+                    throw new Error("Invalid ADSR config");
+            }
+        )
 
         Synth.config.filterEnvelope = config;
     }
