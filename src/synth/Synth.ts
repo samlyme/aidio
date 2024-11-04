@@ -3,6 +3,8 @@ import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig } fr
 
 export default class Synth {
     private static audioContext: AudioContext;
+    // TODO: implement echo effect
+    // TODO: implement "chaining function"
     private static limiter: DynamicsCompressorNode;
     private static volume: GainNode;
     private static config: SynthConfig;
@@ -44,6 +46,11 @@ export default class Synth {
                 release: 1 * MAX_STAGE_TIME,
                 frequencyMin: 1000,
                 frequencyMax: 10000,
+            },
+
+            echo: {
+                delay: 0.5,
+                feedback: 0.5,
             }
         }
 
