@@ -129,7 +129,7 @@ export default class Synth {
             adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
 
             const frequencyMin = Synth.config.filterEnvelope.frequencyMin;
-            filter.frequency.cancelAndHoldAtTime(now);
+            filter.frequency.cancelScheduledValues(now);
             filter.frequency.setValueAtTime(filter.frequency.value, now);
             filter.frequency.exponentialRampToValueAtTime(frequencyMin, releaseEndTime);
             setTimeout(() => {
