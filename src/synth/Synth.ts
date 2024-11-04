@@ -7,7 +7,7 @@ export default class Synth {
     private static limiter: DynamicsCompressorNode;
     private static volume: GainNode;
     private static config: SynthConfig;
-    private static activeNotes: Map<number, [OscillatorNode, GainNode, GainNode]> = new Map();
+    private static activeNotes: Map<number, [OscillatorNode[], GainNode, GainNode]> = new Map();
 
     constructor() {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
@@ -28,8 +28,17 @@ export default class Synth {
         Synth.volume.gain.value = 0.8;
 
         Synth.config = {
-            waveForm: "square",
-            unisons: [{ enabled: false }, { enabled: false }], // by default have 2 disabled
+            waveForm: "triangle",
+            unisons: [
+                { 
+                    enabled: true,
+                    waveForm: "triangle",
+                    detune: 4,
+                    gain: 0.8,
+                }, 
+                { enabled: false }
+            ], // by default have 2 disabled
+
             volumeEnvelope: {
                 attack: 1,
                 decay: 1,
@@ -125,12 +134,31 @@ export default class Synth {
 
     static playNote(note: number, velocity: number) {
         const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
+        const unisons: OscillatorNode[] = [];
         const velocityGain: GainNode = Synth.audioContext.createGain();
         const adsrGain: GainNode = Synth.audioContext.createGain();
 
         oscillator.type = this.config.waveForm;
         oscillator.frequency.value = Synth.midiNoteToFrequency(note);
         oscillator.connect(velocityGain);
+
+        Synth.config.unisons.forEach((value: UnisonConfig) => {
+            if (value.enabled) {
+                const unisonHi: OscillatorNode = Synth.audioContext.createOscillator();
+                const unisonLo: OscillatorNode = Synth.audioContext.createOscillator();
+                unisonHi.type = value.waveForm;
+                unisonLo.type = value.waveForm;
+
+                unisonHi.detune.value = value.detune;
+                unisonLo.detune.value = -value.detune;
+
+                unisonHi.connect(velocityGain);
+                unisonLo.connect(velocityGain);
+
+                unisons.push(unisonHi);
+                unisons.push(unisonLo);
+            }
+        })
 
         velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
         velocityGain.connect(adsrGain);
@@ -146,14 +174,16 @@ export default class Synth {
         adsrGain.connect(Synth.audioContext.destination);
 
         oscillator.start();
-        Synth.activeNotes.set(note, [oscillator, velocityGain, adsrGain]);
+        unisons.forEach((unison: OscillatorNode) => unison.start());
+        
+        Synth.activeNotes.set(note, [[oscillator, ...unisons], velocityGain, adsrGain]);
     }
 
     static releaseNote(note: number) {
-        const activeNote: [OscillatorNode, GainNode, GainNode] | undefined = Synth.activeNotes.get(note);
+        const activeNote: [OscillatorNode[], GainNode, GainNode] | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
-            const oscillator: OscillatorNode = activeNote[0];
+            const oscillators: OscillatorNode[] = activeNote[0];
             const velocityGain: GainNode = activeNote[1]; 
             const adsrGain: GainNode = activeNote[2];
             Synth.activeNotes.delete(note);
@@ -167,8 +197,10 @@ export default class Synth {
             adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
 
             setTimeout(() => {
-                oscillator.stop();
-                oscillator.disconnect();
+                oscillators.forEach((oscillator: OscillatorNode) => {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                })
                 velocityGain.disconnect();
                 adsrGain.disconnect();
             }, 1000 * releaseDuration);
