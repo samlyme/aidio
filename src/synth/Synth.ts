@@ -190,7 +190,6 @@ export default class Synth {
         return unisons;
     }
 
-    // TODO: add implicit types
     private static generateVelocityGain(velocity: MIDIVelocity): GainNode {
         const velocityGain = Synth.audioContext.createGain();
 
