@@ -1,6 +1,9 @@
 import { MAX_STAGE_TIME } from "./Constants";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity } from "./Types";
 
+// TODO: refactor this to singleton
+// static classes typically dont contain mutable state
+// this is a really non-standard and plain weird design pattern
 export default class Synth {
     private static audioContext: AudioContext;
     // TODO: implement echo effect
