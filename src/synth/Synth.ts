@@ -1,11 +1,9 @@
-type WaveForm = "sine" | "square" | "triangle" | "sawtooth";
-
-type SynthConfig = {
-    waveForm: WaveForm;
-}
+import { SynthConfig, UnisonConfig } from "./Types";
 
 export default class Synth {
     private static audioContext: AudioContext;
+    private static limiter: DynamicsCompressorNode;
+    private static volume: GainNode;
     private static config: SynthConfig;
     private static activeNotes: Map<number, [OscillatorNode, GainNode]> = new Map();
 
@@ -13,11 +11,48 @@ export default class Synth {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
         Synth.audioContext = new AudioContext();
 
-        // console.log(Synth.config);
-        
+        // master limiter for the sake of the user
+        Synth.limiter = Synth.audioContext.createDynamicsCompressor();
+        Synth.limiter.threshold.value = -13; // Set threshold in dB
+        Synth.limiter.ratio.value = 20; // Set compression ratio
+        Synth.limiter.attack.value = 0.005; // Set attack time in seconds
+        Synth.limiter.release.value = 0.05; // Set release time in seconds
+        Synth.limiter.knee.value = 0; // Set knee in dB
+        Synth.limiter.connect(Synth.audioContext.destination)
+
+        // master volume control
+        Synth.volume = Synth.audioContext.createGain();
+        // let the user adjust later
+        Synth.volume.gain.value = 0.8;
+
         Synth.config = {
-            waveForm: "sine",
+            waveForm: "square",
+            unisons: [{ enabled: false }, { enabled: false }], // by default have 2 disabled
+            volumeEnvelope: {
+                attack: 0.01,
+                decay: 0,
+                sustain: 1,
+                release: 0.03,
+            },
+            filterEnvelope: {
+                attack: 0,
+                decay: 0,
+                sustain: 0,
+                release: 0,
+            }
         }
+    }
+
+    static setVolume(value: number) {
+        if (value > 1 || value < 0) return;
+
+        Synth.volume.gain.value = value;
+    }
+
+    static setUnison(index: number, config: UnisonConfig) {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        Synth.config.unisons[index] = config;
     }
 
     private static handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
