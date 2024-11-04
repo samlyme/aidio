@@ -13,7 +13,7 @@ export default class Synth {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
         Synth.audioContext = new AudioContext();
 
-        console.log(Synth.config);
+        // console.log(Synth.config);
         
         Synth.config = {
             waveForm: "sine",
