@@ -19,7 +19,7 @@ export default class Synth {
                 { 
                     enabled: true,
                     waveForm: "triangle",
-                    detune: 4,
+                    detune: 5,
                     gain: 0.8,
                 }, 
                 { enabled: false }
@@ -99,56 +99,13 @@ export default class Synth {
         Synth.config.filterEnvelope = config;
     }
 
+    // TODO: refactor code to extract each node into a generator
     static playNote(note: number, velocity: number) {
-        const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
-        const unisons: OscillatorNode[] = [];
-        const velocityGain: GainNode = Synth.audioContext.createGain();
-        const adsrGain: GainNode = Synth.audioContext.createGain();
-        const filter: BiquadFilterNode = Synth.audioContext.createBiquadFilter();
+        const chain: NoteChain = Synth.generateNoteChain(note, velocity);
 
-        oscillator.type = this.config.waveForm;
-        oscillator.frequency.value = Synth.midiNoteToFrequency(note);
-        oscillator.connect(velocityGain);
-
-        Synth.config.unisons.forEach((value: UnisonConfig) => {
-            if (value.enabled) {
-                const unisonHi: OscillatorNode = Synth.audioContext.createOscillator();
-                const unisonLo: OscillatorNode = Synth.audioContext.createOscillator();
-                unisonHi.type = value.waveForm;
-                unisonLo.type = value.waveForm;
-
-                unisonHi.detune.value = value.detune;
-                unisonLo.detune.value = -value.detune;
-
-                unisonHi.connect(velocityGain);
-                unisonLo.connect(velocityGain);
-
-                unisons.push(unisonHi);
-                unisons.push(unisonLo);
-            }
-        })
-
-        velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
-        velocityGain.connect(adsrGain);
-
-        const now: number = Synth.audioContext.currentTime;
-        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack;
-        const decayDuration: number = Synth.config.volumeEnvelope.decay;
-        adsrGain.gain.setValueAtTime(0, now);
-        adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
-        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
-            attackEndTime, decayDuration);
-        adsrGain.connect(filter);
-
-        filter.type = "lowpass";
-        filter.frequency.value = Synth.config.filter.frequency;
-        filter.Q.value = Synth.config.filter.resonance;
-        filter.connect(Synth.volume);
-
-        oscillator.start();
-        unisons.forEach((unison: OscillatorNode) => unison.start());
+        chain[0].forEach((unison: OscillatorNode) => unison.start());
         
-        Synth.activeNotes.set(note, [[oscillator, ...unisons], velocityGain, adsrGain, filter]);
+        Synth.activeNotes.set(note, chain);
     }
 
     static releaseNote(note: number) {
@@ -179,6 +136,90 @@ export default class Synth {
                 filter.disconnect();
             }, 1000 * releaseDuration);
         }
+    }
+
+    private static generateNoteChain(note: number, velocity: number): NoteChain {
+        const oscillator: OscillatorNode = Synth.generateOscillator(note);
+        const unisons: OscillatorNode[] = Synth.generateUnisons(note);
+        const velocityGain: GainNode = Synth.generateVelocityGain(velocity);
+        const adsrGain: GainNode = Synth.generateVolumeADSR();
+        const filter: BiquadFilterNode = Synth.generateFilterWithADSR();
+
+        oscillator.connect(velocityGain);
+        unisons.forEach((value: OscillatorNode) => value.connect(velocityGain));
+        velocityGain.connect(adsrGain);
+        adsrGain.connect(filter);
+        filter.connect(Synth.volume);
+
+        return [[oscillator, ...unisons], velocityGain, adsrGain, filter];
+    }
+
+    private static generateOscillator(note: number): OscillatorNode {
+        const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
+
+        oscillator.type = this.config.waveForm;
+        oscillator.frequency.value = Synth.midiNoteToFrequency(note);
+        
+        return oscillator;
+    }
+
+    private static generateUnisons(note: number): OscillatorNode[] {
+        const unisons: OscillatorNode[] = [];
+        
+        Synth.config.unisons.forEach((value: UnisonConfig) => {
+            if (value.enabled) {
+                const unisonHi: OscillatorNode = Synth.audioContext.createOscillator();
+                const unisonLo: OscillatorNode = Synth.audioContext.createOscillator();
+
+                unisonHi.type = value.waveForm;
+                unisonLo.type = value.waveForm;
+
+                unisonHi.frequency.value = Synth.midiNoteToFrequency(note);
+                unisonLo.frequency.value = Synth.midiNoteToFrequency(note);
+
+                unisonHi.detune.value = value.detune;
+                unisonLo.detune.value = -value.detune;
+
+                unisons.push(unisonHi);
+                unisons.push(unisonLo);
+            }
+        })
+
+        return unisons;
+    }
+
+    // TODO: add implicit types
+    private static generateVelocityGain(velocity: number): GainNode {
+        const velocityGain = Synth.audioContext.createGain();
+
+        velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
+
+        return velocityGain;
+    }
+
+    private static generateVolumeADSR(): GainNode {
+        const adsrGain: GainNode = Synth.audioContext.createGain();
+
+        const now: number = Synth.audioContext.currentTime;
+        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack;
+        const decayDuration: number = Synth.config.volumeEnvelope.decay;
+        adsrGain.gain.setValueAtTime(0, now);
+        adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
+        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
+            attackEndTime, decayDuration);
+
+        return adsrGain;
+    }
+
+    // TODO: Implement filter adsr
+    private static generateFilterWithADSR(): BiquadFilterNode {
+        const filter: BiquadFilterNode = Synth.audioContext.createBiquadFilter();
+
+        filter.type = "lowpass";
+        filter.frequency.value = Synth.config.filter.frequency;
+        filter.Q.value = Synth.config.filter.resonance;
+
+        return filter;
     }
 
     static getAudioContext(): AudioContext {
