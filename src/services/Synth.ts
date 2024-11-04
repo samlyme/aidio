@@ -64,7 +64,7 @@ export default class Synth {
         return midiVelocity / 127.0;
     }
 
-    private static playNote(note: number, velocity: number) {
+    static playNote(note: number, velocity: number) {
         const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
         const velocityGain: GainNode = Synth.audioContext.createGain();
 
@@ -79,7 +79,7 @@ export default class Synth {
         Synth.activeNotes.set(note, [oscillator, velocityGain]);
     }
 
-    private static releaseNote(note: number) {
+    static releaseNote(note: number) {
         const activeNote: [OscillatorNode, GainNode] | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
