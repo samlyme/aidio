@@ -164,7 +164,7 @@ export default class Synth {
 
             adsrGain.gain.cancelScheduledValues(now);
             adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
-            adsrGain.gain.linearRampToValueAtTime(0, releaseEndTime);
+            adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
 
             setTimeout(() => {
                 oscillator.stop();
