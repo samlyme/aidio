@@ -1,22 +1,165 @@
-type WaveForm = "sine" | "square" | "triangle" | "sawtooth";
+import { ADSREnvelope, SynthConfig, UnisonConfig } from "./Types";
 
-type SynthConfig = {
-    waveForm: WaveForm;
-}
+const STAGE_MAX_TIME = 2;
 
 export default class Synth {
     private static audioContext: AudioContext;
+    private static limiter: DynamicsCompressorNode;
+    private static volume: GainNode;
     private static config: SynthConfig;
-    private static activeNotes: Map<number, [OscillatorNode, GainNode]> = new Map();
+    private static activeNotes: Map<number, [OscillatorNode[], GainNode, GainNode]> = new Map();
 
     constructor() {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
         Synth.audioContext = new AudioContext();
 
-        // console.log(Synth.config);
-        
+        // master limiter for the sake of the user
+        Synth.limiter = Synth.audioContext.createDynamicsCompressor();
+        Synth.limiter.threshold.value = -13; // Set threshold in dB
+        Synth.limiter.ratio.value = 20; // Set compression ratio
+        Synth.limiter.attack.value = 0.005; // Set attack time in seconds
+        Synth.limiter.release.value = 0.05; // Set release time in seconds
+        Synth.limiter.knee.value = 0; // Set knee in dB
+        Synth.limiter.connect(Synth.audioContext.destination)
+
+        // master volume control
+        Synth.volume = Synth.audioContext.createGain();
+        // let the user adjust later
+        Synth.volume.gain.value = 0.8;
+
         Synth.config = {
-            waveForm: "sine",
+            waveForm: "triangle",
+            unisons: [
+                { 
+                    enabled: true,
+                    waveForm: "triangle",
+                    detune: 4,
+                    gain: 0.8,
+                }, 
+                { enabled: false }
+            ], // by default have 2 disabled
+
+            volumeEnvelope: {
+                attack: 1,
+                decay: 1,
+                sustain: 0.5,
+                release: 1,
+            },
+            filterEnvelope: {
+                attack: 0,
+                decay: 0,
+                sustain: 0,
+                release: 0,
+            }
+        }
+    }
+
+    static setVolume(value: number) {
+        if (value > 1 || value < 0) return;
+
+        Synth.volume.gain.value = value;
+    }
+
+    static setUnison(index: number, config: UnisonConfig) {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        Synth.config.unisons[index] = config;
+    }
+
+    static setVolumeEnvelope(config: ADSREnvelope) {
+        Object.values(config).forEach(
+            (value: number) => {
+                if (value < 0 || value > 1) 
+                    throw new Error("Invalid ADSR config");
+            }
+        )
+
+        Synth.config.volumeEnvelope = config;
+    }
+
+    static setFilterEnvelop(config: ADSREnvelope) {
+        Object.values(config).forEach(
+            (value: number) => {
+                if (value < 0 || value > 1) 
+                    throw new Error("Invalid ADSR config");
+            }
+        )
+
+        Synth.config.filterEnvelope = config;
+    }
+
+    static playNote(note: number, velocity: number) {
+        const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
+        const unisons: OscillatorNode[] = [];
+        const velocityGain: GainNode = Synth.audioContext.createGain();
+        const adsrGain: GainNode = Synth.audioContext.createGain();
+
+        oscillator.type = this.config.waveForm;
+        oscillator.frequency.value = Synth.midiNoteToFrequency(note);
+        oscillator.connect(velocityGain);
+
+        Synth.config.unisons.forEach((value: UnisonConfig) => {
+            if (value.enabled) {
+                const unisonHi: OscillatorNode = Synth.audioContext.createOscillator();
+                const unisonLo: OscillatorNode = Synth.audioContext.createOscillator();
+                unisonHi.type = value.waveForm;
+                unisonLo.type = value.waveForm;
+
+                unisonHi.detune.value = value.detune;
+                unisonLo.detune.value = -value.detune;
+
+                unisonHi.connect(velocityGain);
+                unisonLo.connect(velocityGain);
+
+                unisons.push(unisonHi);
+                unisons.push(unisonLo);
+            }
+        })
+
+        velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
+        velocityGain.connect(adsrGain);
+
+        const now: number = Synth.audioContext.currentTime;
+        const attackEndTime: number = now + Synth.config.volumeEnvelope.attack * STAGE_MAX_TIME;
+        const decayDuration: number = Synth.config.volumeEnvelope.decay * STAGE_MAX_TIME;
+        adsrGain.gain.setValueAtTime(0, now);
+        adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
+        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
+            attackEndTime, decayDuration
+        );
+        adsrGain.connect(Synth.audioContext.destination);
+
+        oscillator.start();
+        unisons.forEach((unison: OscillatorNode) => unison.start());
+        
+        Synth.activeNotes.set(note, [[oscillator, ...unisons], velocityGain, adsrGain]);
+    }
+
+    static releaseNote(note: number) {
+        const activeNote: [OscillatorNode[], GainNode, GainNode] | undefined = Synth.activeNotes.get(note);
+
+        if (activeNote) {
+            const oscillators: OscillatorNode[] = activeNote[0];
+            const velocityGain: GainNode = activeNote[1]; 
+            const adsrGain: GainNode = activeNote[2];
+            Synth.activeNotes.delete(note);
+
+            const now: number = Synth.audioContext.currentTime;
+            const releaseDuration: number = Synth.config.volumeEnvelope.release * STAGE_MAX_TIME;
+            const releaseEndTime: number = now + releaseDuration;
+
+            adsrGain.gain.cancelScheduledValues(now);
+            adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
+            adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
+
+            setTimeout(() => {
+                oscillators.forEach((oscillator: OscillatorNode) => {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                })
+                velocityGain.disconnect();
+                adsrGain.disconnect();
+            }, 1000 * releaseDuration);
         }
     }
 
@@ -62,31 +205,5 @@ export default class Synth {
 
     private static midiVelocityToGain(midiVelocity: number) {
         return midiVelocity / 127.0;
-    }
-
-    static playNote(note: number, velocity: number) {
-        const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
-        const velocityGain: GainNode = Synth.audioContext.createGain();
-
-        oscillator.type = this.config.waveForm;
-        oscillator.frequency.value = Synth.midiNoteToFrequency(note);
-        oscillator.connect(velocityGain);
-
-        velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
-        velocityGain.connect(Synth.audioContext.destination);
-
-        oscillator.start();
-        Synth.activeNotes.set(note, [oscillator, velocityGain]);
-    }
-
-    static releaseNote(note: number) {
-        const activeNote: [OscillatorNode, GainNode] | undefined = Synth.activeNotes.get(note);
-
-        if (activeNote) {
-            activeNote[0].stop();
-            activeNote[0].disconnect();
-            activeNote[1].disconnect();
-            Synth.activeNotes.delete(note);
-        }
     }
 }
