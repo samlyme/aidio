@@ -19,6 +19,11 @@ export type ADSREnvelope = {
     release: number,
 };
 
+export type FilterEnvelope = ADSREnvelope & {
+    frequencyMin: number,
+    frequencyMax: number,
+}
+
 export type SynthConfig = {
     waveForm: WaveForm,
 
@@ -28,7 +33,10 @@ export type SynthConfig = {
 
     volumeEnvelope: ADSREnvelope,
 
-    filterEnvelope: ADSREnvelope,
+    // Filter envelope will go from frequencyMin to frequencyMax
+    // Then sustain at filter.frequency
+    // Then release to frequencyMin
+    filterEnvelope: FilterEnvelope,
 };
 
 export type NoteChain = [OscillatorNode[], GainNode, GainNode, BiquadFilterNode];
