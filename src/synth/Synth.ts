@@ -1,5 +1,5 @@
 import { MAX_STAGE_TIME } from "./Constants";
-import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig } from "./Types";
+import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity } from "./Types";
 
 export default class Synth {
     private static audioContext: AudioContext;
@@ -8,7 +8,7 @@ export default class Synth {
     private static limiter: DynamicsCompressorNode;
     private static volume: GainNode;
     private static config: SynthConfig;
-    private static activeNotes: Map<number, NoteChain> = new Map();
+    private static activeNotes: Map<MIDINote, NoteChain> = new Map();
 
     constructor() {
         navigator.requestMIDIAccess().then(Synth.handleMIDIAccessSuccess, Synth.handleMIDIAccessFailure);
@@ -109,7 +109,7 @@ export default class Synth {
     }
 
     // TODO: refactor code to extract each node into a generator
-    static playNote(note: number, velocity: number) {
+    static playNote(note: MIDINote, velocity: MIDIVelocity) {
         const chain: NoteChain = Synth.generateNoteChain(note, velocity);
 
         chain[0].forEach((unison: OscillatorNode) => unison.start());
@@ -117,7 +117,7 @@ export default class Synth {
         Synth.activeNotes.set(note, chain);
     }
 
-    static releaseNote(note: number) {
+    static releaseNote(note: MIDINote) {
         const activeNote: NoteChain | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
@@ -134,7 +134,7 @@ export default class Synth {
         }
     }
 
-    private static generateNoteChain(note: number, velocity: number): NoteChain {
+    private static generateNoteChain(note: MIDINote, velocity: MIDIVelocity): NoteChain {
         const oscillator: OscillatorNode = Synth.generateOscillator(note);
         const unisons: OscillatorNode[] = Synth.generateUnisons(note);
         const velocityGain: GainNode = Synth.generateVelocityGain(velocity);
@@ -150,7 +150,7 @@ export default class Synth {
         return [[oscillator, ...unisons], [velocityGain, adsrGain, filter]];
     }
 
-    private static generateOscillator(note: number): OscillatorNode {
+    private static generateOscillator(note: MIDINote): OscillatorNode {
         const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
 
         oscillator.type = this.config.waveForm;
@@ -159,7 +159,7 @@ export default class Synth {
         return oscillator;
     }
 
-    private static generateUnisons(note: number): OscillatorNode[] {
+    private static generateUnisons(note: MIDINote): OscillatorNode[] {
         const unisons: OscillatorNode[] = [];
 
         Synth.config.unisons.forEach((value: UnisonConfig) => {
@@ -185,7 +185,7 @@ export default class Synth {
     }
 
     // TODO: add implicit types
-    private static generateVelocityGain(velocity: number): GainNode {
+    private static generateVelocityGain(velocity: MIDIVelocity): GainNode {
         const velocityGain = Synth.audioContext.createGain();
 
         velocityGain.gain.value = Synth.midiVelocityToGain(velocity);
@@ -301,11 +301,11 @@ export default class Synth {
         }
     }
 
-    private static midiNoteToFrequency(midiNote: number) {
+    private static midiNoteToFrequency(midiNote: MIDINote) {
         return (440 / 32) * (2 ** ((midiNote - 9) / 12));
     }
 
-    private static midiVelocityToGain(midiVelocity: number) {
+    private static midiVelocityToGain(midiVelocity: MIDIVelocity) {
         return midiVelocity / 127.0;
     }
 }

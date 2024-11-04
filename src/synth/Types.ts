@@ -1,5 +1,9 @@
 export type WaveForm = "sine" | "square" | "triangle" | "sawtooth";
 
+export type MIDINote = number;
+
+export type MIDIVelocity = number;
+
 export type UnisonConfig = { enabled: false } | {
     enabled: true,
     waveForm: WaveForm,
