@@ -24,6 +24,11 @@ export type FilterEnvelope = ADSREnvelope & {
     frequencyMax: number,
 }
 
+export type EchoConfig = {
+    delay: number,
+    feedback: number,
+}
+
 export type SynthConfig = {
     waveForm: WaveForm,
 
@@ -37,6 +42,8 @@ export type SynthConfig = {
     // Then sustain at filter.frequency
     // Then release to frequencyMin
     filterEnvelope: FilterEnvelope,
+
+    echo: EchoConfig,
 };
 
 export type NoteChain = [OscillatorNode[], GainNode, GainNode, BiquadFilterNode];
