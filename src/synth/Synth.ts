@@ -88,50 +88,6 @@ export default class Synth {
         Synth.config.filterEnvelope = config;
     }
 
-    private static handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
-        midiAccess.addEventListener("statechange", Synth.updateDevices);
-
-        // this should only be one midi input, but i am running a foreach
-        // just in case the end user uses multiple midi devices.
-        const inputs: MIDIInputMap = midiAccess.inputs;
-
-        inputs.forEach((input: MIDIInput) => {
-            // input.onmidimessage = handleInput;
-            input.addEventListener("midimessage", Synth.handleInput);
-        })
-    }
-
-    private static handleMIDIAccessFailure(): void {
-    }
-
-    // dont ask why this event can't be typed
-    private static updateDevices(event: Event): void {
-        console.log("new device", event);
-    }
-
-    private static handleInput(event: MIDIMessageEvent): void {
-        if (event.data) {
-            const [command, note, velocity] = event.data;
-
-            if (command == 254 || command == 248) return;
-
-            if (command == 144 && velocity > 0) {
-                Synth.playNote(note, velocity);
-            }
-            else {
-                Synth.releaseNote(note);
-            }
-        }
-    }
-
-    private static midiNoteToFrequency(midiNote: number) {
-        return (440 / 32) * (2 ** ((midiNote - 9) / 12));
-    }
-
-    private static midiVelocityToGain(midiVelocity: number) {
-        return midiVelocity / 127.0;
-    }
-
     static playNote(note: number, velocity: number) {
         const oscillator: OscillatorNode = Synth.audioContext.createOscillator();
         const unisons: OscillatorNode[] = [];
@@ -205,5 +161,49 @@ export default class Synth {
                 adsrGain.disconnect();
             }, 1000 * releaseDuration);
         }
+    }
+
+    private static handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
+        midiAccess.addEventListener("statechange", Synth.updateDevices);
+
+        // this should only be one midi input, but i am running a foreach
+        // just in case the end user uses multiple midi devices.
+        const inputs: MIDIInputMap = midiAccess.inputs;
+
+        inputs.forEach((input: MIDIInput) => {
+            // input.onmidimessage = handleInput;
+            input.addEventListener("midimessage", Synth.handleInput);
+        })
+    }
+
+    private static handleMIDIAccessFailure(): void {
+    }
+
+    // dont ask why this event can't be typed
+    private static updateDevices(event: Event): void {
+        console.log("new device", event);
+    }
+
+    private static handleInput(event: MIDIMessageEvent): void {
+        if (event.data) {
+            const [command, note, velocity] = event.data;
+
+            if (command == 254 || command == 248) return;
+
+            if (command == 144 && velocity > 0) {
+                Synth.playNote(note, velocity);
+            }
+            else {
+                Synth.releaseNote(note);
+            }
+        }
+    }
+
+    private static midiNoteToFrequency(midiNote: number) {
+        return (440 / 32) * (2 ** ((midiNote - 9) / 12));
+    }
+
+    private static midiVelocityToGain(midiVelocity: number) {
+        return midiVelocity / 127.0;
     }
 }
