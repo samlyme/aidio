@@ -5,6 +5,11 @@ export type UnisonConfig = { enabled: false } | {
     waveForm: WaveForm,
     detune: number,
     gain: number,
+};
+
+export type FilterConfig = {
+    frequency: number,
+    resonance: number,
 }
 
 export type ADSREnvelope = {
@@ -12,6 +17,16 @@ export type ADSREnvelope = {
     decay: number,
     sustain: number,
     release: number,
+};
+
+export type FilterEnvelope = ADSREnvelope & {
+    frequencyMin: number,
+    frequencyMax: number,
+}
+
+export type EchoConfig = {
+    delay: number,
+    feedback: number,
 }
 
 export type SynthConfig = {
@@ -19,7 +34,16 @@ export type SynthConfig = {
 
     unisons: UnisonConfig[],
 
+    filter: FilterConfig,
+
     volumeEnvelope: ADSREnvelope,
 
-    filterEnvelope: ADSREnvelope,
-}
+    // Filter envelope will go from frequencyMin to frequencyMax
+    // Then sustain at filter.frequency
+    // Then release to frequencyMin
+    filterEnvelope: FilterEnvelope,
+
+    echo: EchoConfig,
+};
+
+export type NoteChain = [OscillatorNode[], GainNode, GainNode, BiquadFilterNode];
