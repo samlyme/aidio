@@ -1,4 +1,4 @@
-import Synth from "./services/Synth"
+import Synth from "./synth/Synth"
 
 function App() {
 
