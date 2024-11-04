@@ -26,7 +26,6 @@ export default class Synth {
         // this should only be one midi input, but i am running a foreach
         // just in case the end user uses multiple midi devices.
         const inputs: MIDIInputMap = midiAccess.inputs;
-        console.log(inputs)
 
         inputs.forEach((input: MIDIInput) => {
             // input.onmidimessage = handleInput;
@@ -35,13 +34,13 @@ export default class Synth {
     }
 
     private static handleMIDIAccessFailure(): void {
-        console.log("Could not access midi");
     }
 
     // dont ask why this event can't be typed
     private static updateDevices(event: Event): void {
-        console.log(event);
+        console.log("new device", event);
     }
+
     private static handleInput(event: MIDIMessageEvent): void {
         if (event.data) {
             const [command, note, velocity] = event.data;
