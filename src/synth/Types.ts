@@ -5,14 +5,14 @@ export type UnisonConfig = { enabled: false } | {
     waveForm: WaveForm,
     detune: number,
     gain: number,
-}
+};
 
 export type ADSREnvelope = {
     attack: number,
     decay: number,
     sustain: number,
     release: number,
-}
+};
 
 export type SynthConfig = {
     waveForm: WaveForm,
@@ -22,4 +22,6 @@ export type SynthConfig = {
     volumeEnvelope: ADSREnvelope,
 
     filterEnvelope: ADSREnvelope,
-}
+};
+
+export type NoteChain = [OscillatorNode[], GainNode, GainNode, BiquadFilterNode];
