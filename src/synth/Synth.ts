@@ -1,5 +1,5 @@
 import { MAX_STAGE_TIME } from "./Constants";
-import { ADSREnvelope, NoteChain, SynthConfig, UnisonConfig } from "./Types";
+import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig } from "./Types";
 
 export default class Synth {
     private static audioContext: AudioContext;
@@ -42,6 +42,8 @@ export default class Synth {
                 decay: 1 * MAX_STAGE_TIME,
                 sustain: 0.5,
                 release: 1 * MAX_STAGE_TIME,
+                frequencyMin: 1000,
+                frequencyMax: 10000,
             }
         }
 
@@ -86,7 +88,7 @@ export default class Synth {
         Synth.config.volumeEnvelope = config;
     }
 
-    static setFilterEnvelop(config: ADSREnvelope) {
+    static setFilterEnvelop(config: FilterEnvelope) {
         if (
             config.attack > MAX_STAGE_TIME || config.attack < 0 ||
             config.decay > MAX_STAGE_TIME || config.decay < 0 ||
@@ -126,6 +128,10 @@ export default class Synth {
             adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
             adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
 
+            const frequencyMin = Synth.config.filterEnvelope.frequencyMin;
+            filter.frequency.cancelAndHoldAtTime(now);
+            filter.frequency.setValueAtTime(filter.frequency.value, now);
+            filter.frequency.exponentialRampToValueAtTime(frequencyMin, releaseEndTime);
             setTimeout(() => {
                 oscillators.forEach((oscillator: OscillatorNode) => {
                     oscillator.stop();
@@ -216,8 +222,17 @@ export default class Synth {
         const filter: BiquadFilterNode = Synth.audioContext.createBiquadFilter();
 
         filter.type = "lowpass";
-        filter.frequency.value = Synth.config.filter.frequency;
         filter.Q.value = Synth.config.filter.resonance;
+
+        const now: number = Synth.audioContext.currentTime;
+        const attackEndTime: number = now + Synth.config.filterEnvelope.attack;
+        const decayDuration: number = Synth.config.filterEnvelope.decay;
+        const frequencyMin = Synth.config.filterEnvelope.frequencyMin;
+        const frequencyMax = Synth.config.filterEnvelope.frequencyMax;
+        const frequency = Synth.config.filter.frequency;
+        filter.frequency.setValueAtTime(frequencyMin, now);
+        filter.frequency.linearRampToValueAtTime(frequencyMax, attackEndTime);
+        filter.frequency.setTargetAtTime(frequency, attackEndTime, decayDuration);
 
         return filter;
     }
