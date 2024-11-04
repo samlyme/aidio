@@ -123,8 +123,10 @@ export default class Synth {
         if (activeNote) {
             Synth.activeNotes.delete(note);
 
-            Synth.releaseADSRGain(activeNote[2]);
-            Synth.releaseFilter(activeNote[3]);
+            // Atrociously unsafe
+            // TODO: implement a safe way to do release effects
+            Synth.releaseADSRGain(activeNote[1][1] as GainNode);
+            Synth.releaseFilter(activeNote[1][2] as BiquadFilterNode);
 
             setTimeout(() => {
                 Synth.killNoteChain(activeNote);
@@ -145,7 +147,7 @@ export default class Synth {
         adsrGain.connect(filter);
         filter.connect(Synth.volume);
 
-        return [[oscillator, ...unisons], velocityGain, adsrGain, filter];
+        return [[oscillator, ...unisons], [velocityGain, adsrGain, filter]];
     }
 
     private static generateOscillator(note: number): OscillatorNode {
@@ -248,17 +250,15 @@ export default class Synth {
 
     private static killNoteChain(noteChain: NoteChain) {
         const oscillators: OscillatorNode[] = noteChain[0];
-        const velocityGain: GainNode = noteChain[1];
-        const adsrGain: GainNode = noteChain[2];
-        const filter: BiquadFilterNode = noteChain[3];
+        const effects: AudioNode[] = noteChain[1];
 
         oscillators.forEach((oscillator: OscillatorNode) => {
             oscillator.stop();
             oscillator.disconnect();
         })
-        velocityGain.disconnect();
-        adsrGain.disconnect();
-        filter.disconnect();
+        effects.forEach((effect: AudioNode) => {
+            effect.disconnect();
+        })
     }
 
     static getAudioContext(): AudioContext {
