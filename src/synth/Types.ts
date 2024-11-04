@@ -1,7 +1,8 @@
 export type WaveForm = "sine" | "square" | "triangle" | "sawtooth";
 
-export type UnisonConfig = { enabled: boolean } | {
-    waveFor: WaveForm,
+export type UnisonConfig = { enabled: false } | {
+    enabled: true,
+    waveForm: WaveForm,
     detune: number,
     gain: number,
 }
