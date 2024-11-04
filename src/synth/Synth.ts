@@ -1,4 +1,6 @@
-import { SynthConfig, UnisonConfig } from "./Types";
+import { ADSREnvelope, SynthConfig, UnisonConfig } from "./Types";
+
+const STAGE_MAX_TIME = 2;
 
 export default class Synth {
     private static audioContext: AudioContext;
@@ -53,6 +55,30 @@ export default class Synth {
         if (index < 0 || index > 1) throw new Error("invalid unison index");
 
         Synth.config.unisons[index] = config;
+    }
+
+    static setVolumeEnvelope(config: ADSREnvelope) {
+        if (config.attack > STAGE_MAX_TIME
+            || config.decay > STAGE_MAX_TIME
+            || config.release > STAGE_MAX_TIME
+        ) throw new Error("Time too long");
+
+        if (config.sustain > 1 || config.sustain < 0) 
+            throw new Error("Invalid sustain")
+
+        Synth.config.volumeEnvelope = config;
+    }
+
+    static setFilterEnvelop(config: ADSREnvelope) {
+        if (config.attack > STAGE_MAX_TIME
+            || config.decay > STAGE_MAX_TIME
+            || config.release > STAGE_MAX_TIME
+        ) throw new Error("Time too long");
+
+        if (config.sustain > 1 || config.sustain < 0) 
+            throw new Error("Invalid sustain")
+
+        Synth.config.filterEnvelope = config;
     }
 
     private static handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
