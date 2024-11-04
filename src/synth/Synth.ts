@@ -16,12 +16,12 @@ export default class Synth {
             waveForm: "triangle",
 
             unisons: [
-                { 
+                {
                     enabled: true,
                     waveForm: "triangle",
                     detune: 5,
                     gain: 0.8,
-                }, 
+                },
                 { enabled: false }
             ],
 
@@ -49,7 +49,7 @@ export default class Synth {
 
         Synth.volume = Synth.audioContext.createGain();
         Synth.limiter = Synth.audioContext.createDynamicsCompressor();
-        
+
         // master volume control
         Synth.volume.gain.value = 0.8;
         Synth.volume.connect(Synth.limiter);
@@ -82,7 +82,7 @@ export default class Synth {
             config.release > MAX_STAGE_TIME || config.release < 0
         ) throw new Error("Invalid times");
 
-        if (config.sustain < 0 || config.sustain > 1) 
+        if (config.sustain < 0 || config.sustain > 1)
             throw new Error("Invalid sustain")
 
         Synth.config.volumeEnvelope = config;
@@ -95,7 +95,7 @@ export default class Synth {
             config.release > MAX_STAGE_TIME || config.release < 0
         ) throw new Error("Invalid times");
 
-        if (config.sustain < 0 || config.sustain > 1) 
+        if (config.sustain < 0 || config.sustain > 1)
             throw new Error("Invalid sustain")
 
         Synth.config.filterEnvelope = config;
@@ -106,7 +106,7 @@ export default class Synth {
         const chain: NoteChain = Synth.generateNoteChain(note, velocity);
 
         chain[0].forEach((unison: OscillatorNode) => unison.start());
-        
+
         Synth.activeNotes.set(note, chain);
     }
 
@@ -114,33 +114,14 @@ export default class Synth {
         const activeNote: NoteChain | undefined = Synth.activeNotes.get(note);
 
         if (activeNote) {
-            const oscillators: OscillatorNode[] = activeNote[0];
-            const velocityGain: GainNode = activeNote[1]; 
-            const adsrGain: GainNode = activeNote[2];
-            const filter: BiquadFilterNode = activeNote[3];
             Synth.activeNotes.delete(note);
 
-            const now: number = Synth.audioContext.currentTime;
-            const releaseDuration: number = Synth.config.volumeEnvelope.release;
-            const releaseEndTime: number = now + releaseDuration;
+            Synth.releaseADSRGain(activeNote[2]);
+            Synth.releaseFilter(activeNote[3]);
 
-            adsrGain.gain.cancelScheduledValues(now);
-            adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
-            adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
-
-            const frequencyMin = Synth.config.filterEnvelope.frequencyMin;
-            filter.frequency.cancelScheduledValues(now);
-            filter.frequency.setValueAtTime(filter.frequency.value, now);
-            filter.frequency.exponentialRampToValueAtTime(frequencyMin, releaseEndTime);
             setTimeout(() => {
-                oscillators.forEach((oscillator: OscillatorNode) => {
-                    oscillator.stop();
-                    oscillator.disconnect();
-                })
-                velocityGain.disconnect();
-                adsrGain.disconnect();
-                filter.disconnect();
-            }, 1000 * releaseDuration);
+                Synth.killNoteChain(activeNote);
+            }, 1000 * Synth.config.volumeEnvelope.release);
         }
     }
 
@@ -165,13 +146,13 @@ export default class Synth {
 
         oscillator.type = this.config.waveForm;
         oscillator.frequency.value = Synth.midiNoteToFrequency(note);
-        
+
         return oscillator;
     }
 
     private static generateUnisons(note: number): OscillatorNode[] {
         const unisons: OscillatorNode[] = [];
-        
+
         Synth.config.unisons.forEach((value: UnisonConfig) => {
             if (value.enabled) {
                 const unisonHi: OscillatorNode = Synth.audioContext.createOscillator();
@@ -211,7 +192,7 @@ export default class Synth {
         const decayDuration: number = Synth.config.volumeEnvelope.decay;
         adsrGain.gain.setValueAtTime(0, now);
         adsrGain.gain.linearRampToValueAtTime(1, attackEndTime);
-        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain, 
+        adsrGain.gain.setTargetAtTime(Synth.config.volumeEnvelope.sustain,
             attackEndTime, decayDuration);
 
         return adsrGain;
@@ -235,6 +216,42 @@ export default class Synth {
         filter.frequency.setTargetAtTime(frequency, attackEndTime, decayDuration);
 
         return filter;
+    }
+
+    private static releaseADSRGain(adsrGain: GainNode) {
+        const now: number = Synth.audioContext.currentTime;
+        const releaseDuration: number = Synth.config.volumeEnvelope.release;
+        const releaseEndTime: number = now + releaseDuration;
+
+        adsrGain.gain.cancelScheduledValues(now);
+        adsrGain.gain.setValueAtTime(adsrGain.gain.value, now);
+        adsrGain.gain.exponentialRampToValueAtTime(0.001, releaseEndTime);
+    }
+
+    private static releaseFilter(filter: BiquadFilterNode) {
+        const now: number = Synth.audioContext.currentTime;
+        const releaseDuration: number = Synth.config.volumeEnvelope.release;
+        const releaseEndTime: number = now + releaseDuration;
+
+        const frequencyMin = Synth.config.filterEnvelope.frequencyMin;
+        filter.frequency.cancelScheduledValues(now);
+        filter.frequency.setValueAtTime(filter.frequency.value, now);
+        filter.frequency.exponentialRampToValueAtTime(frequencyMin, releaseEndTime);
+    }
+
+    private static killNoteChain(noteChain: NoteChain) {
+        const oscillators: OscillatorNode[] = noteChain[0];
+        const velocityGain: GainNode = noteChain[1];
+        const adsrGain: GainNode = noteChain[2];
+        const filter: BiquadFilterNode = noteChain[3];
+
+        oscillators.forEach((oscillator: OscillatorNode) => {
+            oscillator.stop();
+            oscillator.disconnect();
+        })
+        velocityGain.disconnect();
+        adsrGain.disconnect();
+        filter.disconnect();
     }
 
     static getAudioContext(): AudioContext {
