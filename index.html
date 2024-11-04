@@ -1,31 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aidio</title>
-</head>
-
-<body>
-    <h1>ur mom</h1>
-    <button id="play">Play</button>
-
-    <script>
-        document.querySelector("#play").addEventListener("click",
-            () => {
-                const audioContext = new AudioContext();
-
-                const oscillator = audioContext.createOscillator();
-
-                oscillator.type = "sine";
-                oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-
-                oscillator.connect(audioContext.destination);
-                oscillator.start()
-            }
-        )
-    </script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
