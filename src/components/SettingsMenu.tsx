@@ -1,6 +1,9 @@
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
 import CustomSlider from "./Slider"
+import { useEffect, useState } from "react"
+import { WaveForm } from "../synth/Types"
+import Synth from "../synth/Synth"
 
 export default function SettingsMenu() {
 
@@ -20,30 +23,49 @@ export default function SettingsMenu() {
 }
 
 function VoicesMenu() {
+    const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sine");
+    const [unison0WaveForm, setUnison1WaveForm] = useState<WaveForm>("sine");
+    const [unison1WaveForm, setUnison2WaveForm] = useState<WaveForm>("sine");
+
+    useEffect(() => {
+        const synth = Synth.getSynth();
+        synth.setWaveform(mainWaveForm);
+        synth.setUnisonWaveForm(0, unison0WaveForm);
+        synth.setUnisonWaveForm(1, unison1WaveForm);
+    }, [mainWaveForm, unison0WaveForm, unison1WaveForm]);
 
     return (
         <div className=" ml-5 border w-[45vw] border-black">
             <ul>
                 <li className=" p-2">VOICE</li>
-                <OscillatorSettings />
+                <OscillatorSettings waveform={mainWaveForm} setWaveForm={setMainWaveForm} />
 
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 1</li>
-                <OscillatorSettings />
+                <OscillatorSettings waveform={unison0WaveForm} setWaveForm={setUnison1WaveForm} />
 
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 2</li>
-                <OscillatorSettings />
+                <OscillatorSettings waveform={unison1WaveForm} setWaveForm={setUnison2WaveForm} />
             </ul>
         </div>
     )
 }
 
-function OscillatorSettings() {
+function OscillatorSettings({ waveform, setWaveForm }) {
+    const handleWaveForm = (
+        _: React.MouseEvent<HTMLElement>,
+        newWaveform: WaveForm | null,
+    ) => {
+        if (newWaveform !== null) {
+            setWaveForm(newWaveform);
+        }
+    };
+
     return (
         <div>
             {/* TODO: make this a toggle button */}
@@ -52,7 +74,8 @@ function OscillatorSettings() {
                 <span className=" pl-2 mr-2">WAV</span>
                 <ToggleButtonGroup
                     color="primary"
-                    value={"ur mom"}
+                    value={waveform}
+                    onChange={handleWaveForm}
                     exclusive
                 >
                     <ToggleButton value="sine">SIN</ToggleButton>
