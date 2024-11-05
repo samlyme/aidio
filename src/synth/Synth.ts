@@ -19,6 +19,7 @@ export default class Synth {
 
     private constructor() {
         navigator.requestMIDIAccess().then(this.handleMIDIAccessSuccess, this.handleMIDIAccessFailure);
+
         this.audioContext = new AudioContext();
 
         this.config = {
@@ -85,19 +86,19 @@ export default class Synth {
         this.limiter.connect(this.audioContext.destination)
     }
 
-     setVolume(value: number) {
+    setVolume(value: number) {
         if (value > 1 || value < 0) return;
 
         this.volume.gain.value = value;
     }
 
-     setUnison(index: number, config: UnisonConfig) {
+    setUnison(index: number, config: UnisonConfig) {
         if (index < 0 || index > 1) throw new Error("invalid unison index");
 
         this.config.unisons[index] = config;
     }
 
-     setVolumeEnvelope(config: ADSREnvelope) {
+    setVolumeEnvelope(config: ADSREnvelope) {
         if (
             config.attack > MAX_STAGE_TIME || config.attack < 0 ||
             config.decay > MAX_STAGE_TIME || config.decay < 0 ||
@@ -110,7 +111,7 @@ export default class Synth {
         this.config.volumeEnvelope = config;
     }
 
-     setFilterEnvelop(config: FilterEnvelope) {
+    setFilterEnvelop(config: FilterEnvelope) {
         if (
             config.attack > MAX_STAGE_TIME || config.attack < 0 ||
             config.decay > MAX_STAGE_TIME || config.decay < 0 ||
@@ -123,7 +124,7 @@ export default class Synth {
         this.config.filterEnvelope = config;
     }
 
-     playNote(note: MIDINote, velocity: MIDIVelocity) {
+    playNote(note: MIDINote, velocity: MIDIVelocity) {
         const chain: NoteChain = this.generateNoteChain(note, velocity);
 
         chain[0].forEach((voice: OscillatorNode) => voice.start());
@@ -131,7 +132,7 @@ export default class Synth {
         this.activeNotes.set(note, chain);
     }
 
-     releaseNote(note: MIDINote) {
+    releaseNote(note: MIDINote) {
         const activeNote: NoteChain | undefined = this.activeNotes.get(note);
 
         if (activeNote) {
@@ -220,7 +221,6 @@ export default class Synth {
         return adsrGain;
     }
 
-    // TODO: Implement filter adsr
     private generateFilterWithADSR(): BiquadFilterNode {
         const filter: BiquadFilterNode = this.audioContext.createBiquadFilter();
 
@@ -274,45 +274,44 @@ export default class Synth {
         })
     }
 
-     getAudioContext(): AudioContext {
+    getAudioContext(): AudioContext {
         return this.audioContext;
     }
 
     private handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
-        midiAccess.addEventListener("statechange", this.updateDevices);
+        midiAccess.addEventListener("statechange", (event: Event) => updateMIDIDevices(event));
 
-        // this should only be one midi input, but i am running a foreach
-        // just in case the end user uses multiple midi devices.
         const inputs: MIDIInputMap = midiAccess.inputs;
+        console.log("inputs", inputs);
 
         inputs.forEach((input: MIDIInput) => {
-            // input.onmidimessage = handleInput;
-            input.addEventListener("midimessage", this.handleInput);
+            // why is the midi getting looped bruh
+            input.addEventListener("midimessage", (event: MIDIMessageEvent) => handleMIDIInput(event));
         })
+
+        function updateMIDIDevices(event: Event): void {
+            console.log("new device", event);
+        }
+        function handleMIDIInput(event: MIDIMessageEvent): void {
+            if (event.data) {
+                const [command, note, velocity] = event.data;
+    
+                if (command == 254 || command == 248) return;
+    
+                if (command == 144 && velocity > 0) {
+                    Synth.getSynth().playNote(note, velocity);
+                }
+                else {
+                    Synth.getSynth().releaseNote(note);
+                }
+            }
+        }
     }
 
     private handleMIDIAccessFailure(): void {
     }
 
-    // dont ask why this event can't be typed
-    private updateDevices(event: Event): void {
-        console.log("new device", event);
-    }
-
-    private handleInput(event: MIDIMessageEvent): void {
-        if (event.data) {
-            const [command, note, velocity] = event.data;
-
-            if (command == 254 || command == 248) return;
-
-            if (command == 144 && velocity > 0) {
-                this.playNote(note, velocity);
-            }
-            else {
-                this.releaseNote(note);
-            }
-        }
-    }
+    
 
     private midiNoteToFrequency(midiNote: MIDINote) {
         return (440 / 32) * (2 ** ((midiNote - 9) / 12));
