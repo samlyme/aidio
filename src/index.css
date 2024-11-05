@@ -1,3 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "universe"; 
+  src: local("UniversCnRg"),
+  url("./fonts/UniversCnRg.ttf") format("truetype");
+}
+
+li {
+  font-family: "universe";
+}
+
+
 /* 1. Use a more-intuitive box-sizing model */
 *, *::before, *::after {
   box-sizing: border-box;
