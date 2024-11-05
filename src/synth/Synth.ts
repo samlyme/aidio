@@ -9,6 +9,7 @@ export default class Synth {
     private volume: GainNode;
     private config: SynthConfig;
     private activeNotes: Map<MIDINote, NoteChain> = new Map();
+    private analyser: AnalyserNode;
 
     private static instance: Synth;
 
@@ -21,6 +22,8 @@ export default class Synth {
         navigator.requestMIDIAccess().then(handleMIDIAccessSuccess, handleMIDIAccessFailure);
 
         this.audioContext = new AudioContext();
+
+        
 
         this.config = {
             waveForm: "triangle",
@@ -77,6 +80,15 @@ export default class Synth {
         this.echo[1].connect(this.echo[0]);
         this.echo[1].connect(this.limiter);
 
+        // wave form connection for visualization
+
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 2048; 
+        this.volume.connect(this.analyser); 
+        this.analyser.connect(this.limiter);
+
+
+
         // master limiter for the sake of the user
         this.limiter.threshold.value = -3; // Set threshold in dB
         this.limiter.ratio.value = 20; // Set compression ratio
@@ -84,6 +96,7 @@ export default class Synth {
         this.limiter.release.value = 0.05; // Set release time in seconds
         this.limiter.knee.value = 0; // Set knee in dB
         this.limiter.connect(this.audioContext.destination)
+
     }
 
     setVolume(value: number) {

@@ -15,7 +15,7 @@ export default function InteractivePiano() {
 
 
     return (
-        <Piano
+        <Piano className="ml-20 pb-10"
           noteRange={{ first: firstNote, last: lastNote }}
           playNote={(midiNumber) => {
             synth.playNote(midiNumber, 80);

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
+import CustomSlider from "./components/Slider"
 
 
 import '@fontsource/roboto/300.css';
@@ -7,8 +8,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import Slider from '@mui/material/Slider';
-import * as React from 'react'
+
 
 import "./index.css"
 
@@ -28,33 +28,117 @@ function App() {
       {
         ready ?
           (
-            
-      <><div className=" ml-10 border w-[30vw] border-black">
+           
+            <>
+            <div className=" flex gap-5 mt-5 mr-5 pb-10"> 
+            <div className=" ml-5 border w-[45vw] border-black">
               <ul>
                 <li className=" p-2">VOICE</li>
-                <Slider defaultValue={0.3} max={1} min={0} step={0.1} sx={{ width: 200, marginLeft: 2, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                <CustomSlider />
                 <li className=" flex items-center">
                   <span className=" pl-2 mr-2">DET</span>
-                  <Slider defaultValue={30} sx={{ width: 200, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                  <CustomSlider />
                 </li>
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
                 <li className=" p-2">UNISON 1</li>
-                <Slider defaultValue={30} sx={{ width: 200, marginLeft: 2, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                <CustomSlider />
                 <li className=" flex items-center">
                   <span className=" pl-2 mr-2">DET</span>
-                  <Slider defaultValue={30} sx={{ width: 200, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                  <CustomSlider />
                 </li>
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
                 <li className=" p-2">UNISON 2</li>
-                <Slider defaultValue={30} sx={{ width: 200, marginLeft: 2, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                <CustomSlider />
                 <li className=" flex items-center">
                   <span className=" pl-2 mr-2">DET</span>
-                  <Slider defaultValue={30} sx={{ width: 200, height: 30, color: "#d9d9d9", borderRadius: 0, '& .MuiSlider-thumb': { opacity: 0 } }} />
+                  <CustomSlider />
                 </li>
               </ul>
-            </div><InteractivePiano /></>
+            </div>
+
+
+               
+            <div className="  border w-[45vw] border-black">
+              <ul>
+                <li className=" p-2">ASDR - VOLUME</li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">ATK</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">DEC</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">SUS</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">REL</span>
+                  <CustomSlider />
+                </li>
+                <li><hr className="border-1 border-black pb-12"></hr></li>
+                <li><hr className="border-1 border-black"></hr></li>
+                <li className=" p-2">ASDR - FILTER</li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">ATK</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">DEC</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">SUS</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">REL</span>
+                  <CustomSlider />
+                </li>
+              </ul>
+            </div>
+
+
+            <div className="  border w-[45vw] border-black">
+              <ul>
+                <li className=" p-2">ASDR - VOLUME</li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">ATK</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">DEC</span>
+                  <CustomSlider />
+                </li>
+                <li><hr className="border-1 border-black pb-12"></hr></li>
+                <li><hr className="border-1 border-black"></hr></li>
+                <li className=" p-2">ASDR - FILTER</li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">ATK</span>
+                  <CustomSlider />
+                </li>
+                <li className=" flex items-center">
+                  <span className=" pl-2 mr-2">DEC</span>
+                  <CustomSlider />
+                </li>
+                <li><hr className="border-1 border-black pb-12"></hr></li>
+                <li><hr className="border-1 border-black"></hr></li>
+              </ul>
+            </div>
+
+            <div className="  border w-[45vw] border-black">
+              <ul className=" h-full">
+                <li className="h-full "><textarea placeholder="SEND A MESSAGE" className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"></textarea></li>
+              </ul>
+            </div>
+
+
+            </div>
+            
+            <InteractivePiano/></>
           )
           :
           <button onClick={() => { setReady(true); }}>
