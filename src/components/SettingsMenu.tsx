@@ -24,8 +24,8 @@ export default function SettingsMenu() {
 
 function VoicesMenu() {
     const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sine");
-    const [unison0WaveForm, setUnison1WaveForm] = useState<WaveForm>("sine");
-    const [unison1WaveForm, setUnison2WaveForm] = useState<WaveForm>("sine");
+    const [unison0WaveForm, setUnison0WaveForm] = useState<WaveForm>("sine");
+    const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("sine");
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -34,35 +34,71 @@ function VoicesMenu() {
         synth.setUnisonWaveForm(1, unison1WaveForm);
     }, [mainWaveForm, unison0WaveForm, unison1WaveForm]);
 
+    const [mainDetune, setMainDetune] = useState<number>(0);
+    const [unison0Detune, setUnison0Detune] = useState<number>(0);
+    const [unison1Detune, setUnison1Detune] = useState<number>(0);
+
+    useEffect(() => {
+        const synth = Synth.getSynth();
+        console.log(mainDetune);
+        // TODO: Make detune slider map properly
+        synth.setUnisonDetune(0, unison0Detune * 500); 
+        synth.setUnisonDetune(1, unison1Detune * 500);
+    }, [mainDetune, unison0Detune, unison1Detune]);
+
     return (
         <div className=" ml-5 border w-[45vw] border-black">
             <ul>
                 <li className=" p-2">VOICE</li>
-                <OscillatorSettings waveform={mainWaveForm} setWaveForm={setMainWaveForm} />
+                <OscillatorSettings 
+                    waveform={mainWaveForm} 
+                    setWaveForm={setMainWaveForm} 
+                    detune={mainDetune}
+                    setDetune={setMainDetune}
+                    />
 
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 1</li>
-                <OscillatorSettings waveform={unison0WaveForm} setWaveForm={setUnison1WaveForm} />
+                <OscillatorSettings 
+                    waveform={unison0WaveForm} 
+                    setWaveForm={setUnison0WaveForm} 
+                    detune={unison0Detune}
+                    setDetune={setUnison0Detune}
+                    />
 
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 2</li>
-                <OscillatorSettings waveform={unison1WaveForm} setWaveForm={setUnison2WaveForm} />
+                <OscillatorSettings 
+                    waveform={unison1WaveForm} 
+                    setWaveForm={setUnison1WaveForm} 
+                    detune={unison1Detune}
+                    setDetune={setUnison1Detune}
+                    />
             </ul>
         </div>
     )
 }
 
-function OscillatorSettings({ waveform, setWaveForm }) {
+function OscillatorSettings({ waveform, setWaveForm, detune, setDetune }) {
     const handleWaveForm = (
         _: React.MouseEvent<HTMLElement>,
         newWaveform: WaveForm | null,
     ) => {
         if (newWaveform !== null) {
             setWaveForm(newWaveform);
+        }
+    };
+
+    const handleDetune = (
+        _: React.MouseEvent<HTMLElement>,
+        newDetune: WaveForm | null,
+    ) => {
+        if (newDetune !== null) {
+            setDetune(newDetune);
         }
     };
 
@@ -86,7 +122,7 @@ function OscillatorSettings({ waveform, setWaveForm }) {
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DET</span>
-                <CustomSlider />
+                <CustomSlider value={detune} onChange={handleDetune}/>
             </li>
         </div>
     )
