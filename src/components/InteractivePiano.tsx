@@ -11,14 +11,17 @@ export default function InteractivePiano() {
         keyboardConfig: KeyboardShortcuts.HOME_ROW,
     });
 
+    const synth: Synth = new Synth();
+
+
     return (
         <Piano
           noteRange={{ first: firstNote, last: lastNote }}
           playNote={(midiNumber) => {
-            Synth.playNote(midiNumber, 80);
+            synth.playNote(midiNumber, 80);
           }}
           stopNote={(midiNumber) => {
-            Synth.releaseNote(midiNumber);
+            synth.releaseNote(midiNumber);
           }}
           width={1000}
           keyboardShortcuts={keyboardShortcuts}
