@@ -1,4 +1,5 @@
 import { MAX_STAGE_TIME } from "./Constants";
+import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./Midi";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode } from "./Types";
 
 export default class Synth {
@@ -18,7 +19,7 @@ export default class Synth {
     }
 
     private constructor() {
-        navigator.requestMIDIAccess().then(this.handleMIDIAccessSuccess, this.handleMIDIAccessFailure);
+        navigator.requestMIDIAccess().then(handleMIDIAccessSuccess, handleMIDIAccessFailure);
 
         this.audioContext = new AudioContext();
 
@@ -277,41 +278,6 @@ export default class Synth {
     getAudioContext(): AudioContext {
         return this.audioContext;
     }
-
-    private handleMIDIAccessSuccess(midiAccess: MIDIAccess) {
-        midiAccess.addEventListener("statechange", (event: Event) => updateMIDIDevices(event));
-
-        const inputs: MIDIInputMap = midiAccess.inputs;
-        console.log("inputs", inputs);
-
-        inputs.forEach((input: MIDIInput) => {
-            // why is the midi getting looped bruh
-            input.addEventListener("midimessage", (event: MIDIMessageEvent) => handleMIDIInput(event));
-        })
-
-        function updateMIDIDevices(event: Event): void {
-            console.log("new device", event);
-        }
-        function handleMIDIInput(event: MIDIMessageEvent): void {
-            if (event.data) {
-                const [command, note, velocity] = event.data;
-    
-                if (command == 254 || command == 248) return;
-    
-                if (command == 144 && velocity > 0) {
-                    Synth.getSynth().playNote(note, velocity);
-                }
-                else {
-                    Synth.getSynth().releaseNote(note);
-                }
-            }
-        }
-    }
-
-    private handleMIDIAccessFailure(): void {
-    }
-
-    
 
     private midiNoteToFrequency(midiNote: MIDINote) {
         return (440 / 32) * (2 ** ((midiNote - 9) / 12));
