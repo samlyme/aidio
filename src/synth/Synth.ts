@@ -1,10 +1,9 @@
 import { MAX_STAGE_TIME } from "./Constants";
 import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./Midi";
-import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode } from "./Types";
+import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode, WaveForm, FilterConfig, EchoConfig } from "./Types";
 
 export default class Synth {
     private audioContext: AudioContext;
-    // TODO: implement echo effect
     private echo: EchoNode;
     private limiter: DynamicsCompressorNode;
     private volume: GainNode;
@@ -93,10 +92,18 @@ export default class Synth {
         this.volume.gain.value = value;
     }
 
+    setWaveform(value: WaveForm) {
+        this.config.waveForm = value;
+    }
+
     setUnison(index: number, config: UnisonConfig) {
         if (index < 0 || index > 1) throw new Error("invalid unison index");
 
         this.config.unisons[index] = config;
+    }
+
+    setFilter(config: FilterConfig) {
+        this.config.filter = config;
     }
 
     setVolumeEnvelope(config: ADSREnvelope) {
@@ -123,6 +130,10 @@ export default class Synth {
             throw new Error("Invalid sustain")
 
         this.config.filterEnvelope = config;
+    }
+
+    setEcho(config: EchoConfig) {
+        this.config.echo = config;
     }
 
     playNote(note: MIDINote, velocity: MIDIVelocity) {
