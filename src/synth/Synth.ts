@@ -1,5 +1,5 @@
 import { MAX_STAGE_TIME } from "./Constants";
-import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./Midi";
+import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./MidiUtils";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode, WaveForm, FilterConfig, EchoConfig } from "./Types";
 
 export default class Synth {
