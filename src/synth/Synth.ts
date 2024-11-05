@@ -1,19 +1,23 @@
 import { MAX_STAGE_TIME } from "./Constants";
-import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity } from "./Types";
+import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode } from "./Types";
 
-// TODO: refactor this to singleton
-//  classes typically dont contain mutable state
-// this is a really non-standard and plain weird design pattern
 export default class Synth {
     private audioContext: AudioContext;
     // TODO: implement echo effect
-    // TODO: implement "chaining function"
+    private echo: EchoNode;
     private limiter: DynamicsCompressorNode;
     private volume: GainNode;
     private config: SynthConfig;
     private activeNotes: Map<MIDINote, NoteChain> = new Map();
 
-    constructor() {
+    private static instance: Synth;
+
+    static getSynth(): Synth {
+        if (!this.instance) this.instance = new Synth();
+        return this.instance;
+    }
+
+    private constructor() {
         navigator.requestMIDIAccess().then(this.handleMIDIAccessSuccess, this.handleMIDIAccessFailure);
         this.audioContext = new AudioContext();
 
@@ -36,7 +40,7 @@ export default class Synth {
             },
 
             volumeEnvelope: {
-                attack: 1 * MAX_STAGE_TIME,
+                attack: 0.01 * MAX_STAGE_TIME,
                 decay: 1 * MAX_STAGE_TIME,
                 sustain: 0.5,
                 release: 1 * MAX_STAGE_TIME,
@@ -53,19 +57,24 @@ export default class Synth {
 
             echo: {
                 delay: 0.5,
-                feedback: 0.5,
+                feedback: 0.7,
             }
         }
 
-        // TODO: implement effects class, use builder pattern with chain
-        // - Generator function that takes in an array and returns a chain
-        // - Note source that connects to the effects chain 
         this.volume = this.audioContext.createGain();
+        this.echo = [this.audioContext.createDelay(), this.audioContext.createGain()];
         this.limiter = this.audioContext.createDynamicsCompressor();
 
         // master volume control
         this.volume.gain.value = 0.8;
+        this.volume.connect(this.echo[0]);
         this.volume.connect(this.limiter);
+
+        this.echo[0].delayTime.value = this.config.echo.delay;
+        this.echo[0].connect(this.echo[1]);
+        this.echo[1].gain.value = this.config.echo.feedback;
+        this.echo[1].connect(this.echo[0]);
+        this.echo[1].connect(this.limiter);
 
         // master limiter for the sake of the user
         this.limiter.threshold.value = -3; // Set threshold in dB
@@ -114,11 +123,10 @@ export default class Synth {
         this.config.filterEnvelope = config;
     }
 
-    // TODO: refactor code to extract each node into a generator
      playNote(note: MIDINote, velocity: MIDIVelocity) {
         const chain: NoteChain = this.generateNoteChain(note, velocity);
 
-        chain[0].forEach((unison: OscillatorNode) => unison.start());
+        chain[0].forEach((voice: OscillatorNode) => voice.start());
 
         this.activeNotes.set(note, chain);
     }

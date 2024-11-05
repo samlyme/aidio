@@ -11,7 +11,7 @@ export default function InteractivePiano() {
         keyboardConfig: KeyboardShortcuts.HOME_ROW,
     });
 
-    const synth: Synth = new Synth();
+    const synth: Synth = Synth.getSynth();
 
 
     return (

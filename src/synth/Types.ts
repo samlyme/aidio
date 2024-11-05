@@ -51,8 +51,9 @@ export type SynthConfig = {
 };
 
 // TODO: Implement EffectsChain and NoteChain as a class for type safety
-// This is technically not type safe since one of the nodes can be a source
-export type EffectsChain = AudioNode[];
+// - this shit is so cursed lmao
+export type EchoNode = [DelayNode, GainNode];
+export type EffectsChain = [GainNode, GainNode, BiquadFilterNode];
 
 // NoteChain is the result of a note being played.
 export type NoteChain = [OscillatorNode[], EffectsChain];
