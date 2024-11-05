@@ -42,8 +42,9 @@ function VoicesMenu() {
         const synth = Synth.getSynth();
         console.log(mainDetune);
         // TODO: Make detune slider map properly
-        synth.setUnisonDetune(0, unison0Detune * 500); 
-        synth.setUnisonDetune(1, unison1Detune * 500);
+        // - remove range from CustomSlider definition
+        synth.setUnisonDetune(0, unison0Detune * 100); 
+        synth.setUnisonDetune(1, unison1Detune * 100);
     }, [mainDetune, unison0Detune, unison1Detune]);
 
     return (
