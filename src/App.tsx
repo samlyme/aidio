@@ -1,5 +1,6 @@
 import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
+import SettingsMenu from "./components/SettingsMenu";
 
 
 import '@fontsource/roboto/300.css';
@@ -10,7 +11,6 @@ import '@fontsource/roboto/700.css';
 
 
 import "./index.css"
-import SettingsMenu from "./components/SettingsMenu";
 
 
 
