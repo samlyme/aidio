@@ -1,6 +1,7 @@
 import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
 import SettingsMenu from "./components/SettingsMenu";
+import WelcomeMenu from "./components/WelcomeMenu";
 
 function App() {
 
@@ -14,9 +15,7 @@ function App() {
             <SettingsMenu />
             <InteractivePiano />
           </> :
-          <button onClick={() => { setReady(true); }}>
-            start
-          </button>
+          <WelcomeMenu setReady={setReady}/>
       }
     </>
   )
