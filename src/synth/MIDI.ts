@@ -9,11 +9,7 @@ export function handleMIDIAccessSuccess(midiAccess: MIDIAccess): void {
 
     inputs.forEach((input: MIDIInput) => {
         // why is the midi getting looped bruh
-        input.addEventListener("midimessage", (event: MIDIMessageEvent) => {
-            handleMIDIInput(event);
-            console.log("add event listener");
-
-        });
+        input.addEventListener("midimessage", (event: MIDIMessageEvent) => handleMIDIInput(event));
     })
 
     function updateMIDIDevices(event: Event): void {
