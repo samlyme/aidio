@@ -1,6 +1,6 @@
 import { useState } from "react"
-import Synth from "./synth/Synth"
 import InteractivePiano from "./components/InteractivePiano";
+import SettingsMenu from "./components/SettingsMenu";
 
 function App() {
 
@@ -9,8 +9,12 @@ function App() {
   return (
     <>
       {
-        ready ? <InteractivePiano/> :
-          <button onClick={() => { new Synth(); setReady(true); }}>
+        ready ?
+          <>
+            <SettingsMenu />
+            <InteractivePiano />
+          </> :
+          <button onClick={() => { setReady(true); }}>
             start
           </button>
       }
