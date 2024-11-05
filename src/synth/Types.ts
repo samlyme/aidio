@@ -4,8 +4,8 @@ export type MIDINote = number;
 
 export type MIDIVelocity = number;
 
-export type UnisonConfig = { enabled: false } | {
-    enabled: true,
+export type UnisonConfig = {
+    enabled: boolean,
     waveForm: WaveForm,
     detune: number,
     gain: number,
@@ -25,7 +25,6 @@ export type ADSREnvelope = {
 
 export type FilterEnvelope = ADSREnvelope & {
     frequencyMin: number,
-    frequencyMax: number,
 }
 
 export type EchoConfig = {
