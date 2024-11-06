@@ -14,7 +14,7 @@ export const DEFAULT_MASTER_VOLUME: number = 1;
 
 // Filter Frequency (in Hz)
 export const MAX_FILTER_FREQUENCY: number = 20000;  // 20 kHz, upper limit of human hearing
-export const MIN_FILTER_FREQUENCY: number = 20;     // 20 Hz, lower limit of human hearing
+export const MIN_FILTER_FREQUENCY: number = 100;     // 20 Hz, lower limit of human hearing
 export const DEFAULT_FILTER_FREQUENCY: number = 1000;  // 1 kHz, common mid-range frequency
 
 // Filter Resonance (Q factor)
@@ -63,7 +63,7 @@ export const MIN_VOLUME_RELEASE: number = 0;
 export const DEFAULT_VOLUME_RELEASE: number = 0.5;   // Medium release time
 
 // Echo Delay Time (in seconds)
-export const MAX_ECHO_DELAY: number = 2;     // 2 seconds for longer echo delay
+export const MAX_ECHO_DELAY: number = 1;     // 2 seconds for longer echo delay
 export const MIN_ECHO_DELAY: number = 0;
 export const DEFAULT_ECHO_DELAY: number = 0.3;  // Default of 0.3 seconds for a moderate echo effect
 
@@ -73,8 +73,8 @@ export const MIN_ECHO_FEEDBACK: number = 0;
 export const DEFAULT_ECHO_FEEDBACK: number = 0.5;  // 0.5 (50%) for a balanced feedback level
 
 // Detune Amount (in cents)
-export const MAX_DETUNE: number = 1200;      // 1200 cents (1 octave up)
-export const MIN_DETUNE: number = 0;     // -1200 cents (1 octave down)
+export const MAX_DETUNE: number = 100;      
+export const MIN_DETUNE: number = 0;     
 export const DEFAULT_DETUNE: number = 0;     // No detune as default
 
 
