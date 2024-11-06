@@ -1,6 +1,7 @@
 import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
-import CustomSlider from "./components/Slider"
+import SettingsMenu from "./components/SettingsMenu";
+import CustomSlider from "./components/Slider";
 
 
 import '@fontsource/roboto/300.css';
@@ -31,8 +32,7 @@ function App() {
 
       {
         ready ?
-          (
-           
+          ( 
             <>
             <div className=" flex gap-5 mt-5 mr-5 pb-10"> 
             <div className=" ml-5 border w-[45vw] border-black">
@@ -150,7 +150,11 @@ function App() {
             </div>
             
             <InteractivePiano isTextBoxFocused={isTextBoxFocused} />
+           
+            <SettingsMenu />
+            <InteractivePiano isTextBoxFocused={isTextBoxFocused} />
             </>
+            
           )
           :
           <button onClick={() => { setReady(true); }}>
