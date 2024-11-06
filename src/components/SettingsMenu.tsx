@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { WaveForm } from "../synth/Types"
 import Synth from "../synth/Synth"
 import Oscilloscope from "./Oscilloscope"
+import { DEFAULT_DETUNE, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_MASTER_VOLUME, MIN_DETUNE, MIN_MASTER_VOLUME } from "../synth/Constants"
 
 export default function SettingsMenu() {
 
@@ -24,9 +25,9 @@ export default function SettingsMenu() {
 }
 
 function VoicesMenu() {
-    const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sine");
-    const [unison0WaveForm, setUnison0WaveForm] = useState<WaveForm>("sine");
-    const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("sine");
+    const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sawtooth");
+    const [unison0WaveForm, setUnison0WaveForm] = useState<WaveForm>("square");
+    const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("triangle");
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -35,35 +36,35 @@ function VoicesMenu() {
         synth.setUnisonWaveForm(1, unison1WaveForm);
     }, [mainWaveForm, unison0WaveForm, unison1WaveForm]);
 
-    const [mainDetune, setMainDetune] = useState<number>(0);
-    const [unison0Detune, setUnison0Detune] = useState<number>(0);
-    const [unison1Detune, setUnison1Detune] = useState<number>(0);
+    const [mainVolume, setMainVolume] = useState<number>(DEFAULT_MASTER_VOLUME);
+    const [unison0Detune, setUnison0Detune] = useState<number>(DEFAULT_DETUNE);
+    const [unison1Detune, setUnison1Detune] = useState<number>(DEFAULT_DETUNE);
 
     useEffect(() => {
         const synth = Synth.getSynth();
-        console.log(mainDetune);
         // TODO: Make detune slider map properly
         // - remove range from CustomSlider definition
+        synth.setVolume(mainVolume);
         synth.setUnisonDetune(0, unison0Detune);
         synth.setUnisonDetune(1, unison1Detune);
-    }, [mainDetune, unison0Detune, unison1Detune]);
+    }, [mainVolume, unison0Detune, unison1Detune]);
 
     return (
         <div className=" ml-5 border w-[45vw] border-black">
             <ul>
                 <li className=" p-2">VOICE</li>
-                <OscillatorSettings
+                <VoiceSettings
                     waveform={mainWaveForm}
                     setWaveForm={setMainWaveForm}
-                    detune={mainDetune}
-                    setDetune={setMainDetune}
+                    volume={mainVolume}
+                    setVolume={setMainVolume}
                 />
 
                 <li><hr className="border-1 border-black pb-12"></hr></li>
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 1</li>
-                <OscillatorSettings
+                <UnisonSettings
                     waveform={unison0WaveForm}
                     setWaveForm={setUnison0WaveForm}
                     detune={unison0Detune}
@@ -74,7 +75,7 @@ function VoicesMenu() {
                 <li><hr className="border-1 border-black"></hr></li>
 
                 <li className=" p-2">UNISON 2</li>
-                <OscillatorSettings
+                <UnisonSettings
                     waveform={unison1WaveForm}
                     setWaveForm={setUnison1WaveForm}
                     detune={unison1Detune}
@@ -85,7 +86,57 @@ function VoicesMenu() {
     )
 }
 
-function OscillatorSettings({ waveform, setWaveForm, detune, setDetune }) {
+function VoiceSettings({ waveform, setWaveForm, volume, setVolume }) {
+    const handleWaveForm = (
+        _: React.MouseEvent<HTMLElement>,
+        newWaveform: WaveForm | null,
+    ) => {
+        if (newWaveform !== null) {
+            setWaveForm(newWaveform);
+        }
+    };
+
+    const handleVolume = (
+        _: React.MouseEvent<HTMLElement>,
+        newVolume: WaveForm | null,
+    ) => {
+        if (newVolume !== null) {
+            setVolume(newVolume);
+        }
+    };
+
+    return (
+        <div>
+            {/* TODO: make this a toggle button */}
+            <li className=" flex items-center">
+                {/* TODO: make this font monospace */}
+                <span className=" pl-2 mr-2">WAV</span>
+                <ToggleButtonGroup
+                    color="primary"
+                    value={waveform}
+                    onChange={handleWaveForm}
+                    exclusive
+                >
+                    <ToggleButton value="sine">SIN</ToggleButton>
+                    <ToggleButton value="square">SQA</ToggleButton>
+                    <ToggleButton value="triangle">TRI</ToggleButton>
+                    <ToggleButton value="sawtooth">SAW</ToggleButton>
+                </ToggleButtonGroup>
+            </li>
+            <li className=" flex items-center">
+                <span className=" pl-2 mr-2">VOL</span>
+                <CustomSlider 
+                    min={MIN_MASTER_VOLUME}
+                    max={MAX_MASTER_VOLUME}
+                    step={0.01}
+                    value={volume} 
+                    onChange={handleVolume} />
+            </li>
+        </div>
+    )
+}
+
+function UnisonSettings({ waveform, setWaveForm, detune, setDetune }) {
     const handleWaveForm = (
         _: React.MouseEvent<HTMLElement>,
         newWaveform: WaveForm | null,
@@ -101,6 +152,8 @@ function OscillatorSettings({ waveform, setWaveForm, detune, setDetune }) {
     ) => {
         if (newDetune !== null) {
             setDetune(newDetune);
+            console.log(newDetune);
+            
         }
     };
 
@@ -124,7 +177,11 @@ function OscillatorSettings({ waveform, setWaveForm, detune, setDetune }) {
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DET</span>
-                <CustomSlider value={detune} onChange={handleDetune} />
+                <CustomSlider 
+                    min={MIN_DETUNE}
+                    max={MAX_DETUNE}
+                    value={detune} 
+                    onChange={handleDetune} />
             </li>
         </div>
     )
@@ -148,10 +205,10 @@ function EnvelopesMenu() {
 function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
     const synth = Synth.getSynth();
 
-    const [attack, setAttack] = useState<number>(0.3);
-    const [decay, setDecay] = useState<number>(0.3);
-    const [sustain, setSustain] = useState<number>(0.3);
-    const [release, setRelease] = useState<number>(0.3);
+    const [attack, setAttack] = useState<number>(target == "filter" ? DEFAULT_FILTER_ATTACK : DEFAULT_VOLUME_ATTACK);
+    const [decay, setDecay] = useState<number>(target == "filter" ? DEFAULT_FILTER_DECAY : DEFAULT_VOLUME_DECAY);
+    const [sustain, setSustain] = useState<number>(target == "filter" ? DEFAULT_FILTER_SUSTAIN : DEFAULT_VOLUME_SUSTAIN);
+    const [release, setRelease] = useState<number>(target == "filter" ? DEFAULT_FILTER_RELEASE : DEFAULT_VOLUME_RELEASE);
 
     const handleAttack = (
         _: React.MouseEvent<HTMLElement>,
@@ -194,11 +251,15 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
         <>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">ATK</span>
-                <CustomSlider value={attack} onChange={handleAttack} />
+                <CustomSlider 
+                    scale={(value) => 1000**value} 
+                    value={attack} onChange={handleAttack} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEC</span>
-                <CustomSlider value={decay} onChange={handleDecay} />
+                <CustomSlider 
+                    scale={(value) => 1000**value} 
+                    value={decay} onChange={handleDecay} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">SUS</span>
@@ -206,7 +267,9 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">REL</span>
-                <CustomSlider value={release} onChange={handleRelease} />
+                <CustomSlider 
+                    scale={(value) => 1000**value} 
+                    value={release} onChange={handleRelease} />
             </li>
         </>
     )
@@ -259,7 +322,8 @@ function FilterSettings() {
         <>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">FRQ</span>
-                <CustomSlider value={frequency} onChange={handleFrequency} />
+                {/* filter freq usually works in log scale */}
+                <CustomSlider scale={(value) => 2**value} value={frequency} onChange={handleFrequency} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">RES</span>
@@ -298,7 +362,9 @@ function EchoSettings() {
         <>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEL</span>
-                <CustomSlider value={delay} onChange={handleDelay}/>
+                <CustomSlider 
+                    scale={(value) => 1000**value} 
+                    value={delay} onChange={handleDelay}/>
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">FBK</span>
