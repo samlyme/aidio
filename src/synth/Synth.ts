@@ -1,4 +1,4 @@
-import { MAX_STAGE_TIME } from "./Constants";
+import { MAX_DELAY_TIME, MAX_STAGE_TIME } from "./Constants";
 import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./MidiUtils";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode, WaveForm, FilterConfig, EchoConfig } from "./Types";
 
@@ -35,12 +35,17 @@ export default class Synth {
                     detune: 5,
                     gain: 0.8,
                 },
-                { enabled: false }
+                { 
+                    enabled: true,
+                    waveForm: "sawtooth",
+                    detune: 7,
+                    gain: 0.8,
+                }
             ],
 
             filter: {
                 frequency: 5000,
-                resonance: 30,
+                resonance: 10,
             },
 
             volumeEnvelope: {
@@ -51,17 +56,16 @@ export default class Synth {
             },
 
             filterEnvelope: {
-                attack: 1 * MAX_STAGE_TIME,
-                decay: 1 * MAX_STAGE_TIME,
+                attack: 0.03 * MAX_STAGE_TIME,
+                decay: 0.3 * MAX_STAGE_TIME,
                 sustain: 0.5,
                 release: 1 * MAX_STAGE_TIME,
                 frequencyMin: 1000,
-                frequencyMax: 10000,
             },
 
             echo: {
                 delay: 0.5,
-                feedback: 0.7,
+                feedback: .1,
             }
         }
 
@@ -99,24 +103,61 @@ export default class Synth {
 
     }
 
-    setVolume(value: number) {
+    setVolume(value: number): void {
         if (value > 1 || value < 0) return;
 
         this.volume.gain.value = value;
     }
 
-    setWaveform(value: WaveForm) {
+    setWaveform(value: WaveForm): void {
         this.config.waveForm = value;
     }
 
-    setUnison(index: number, config: UnisonConfig) {
+    setUnison(index: number, config: UnisonConfig): void {
         if (index < 0 || index > 1) throw new Error("invalid unison index");
 
-        this.config.unisons[index] = config;
+        this.config.unisons[index] = {...config};
     }
 
-    setFilter(config: FilterConfig) {
-        this.config.filter = config;
+    toggleUnison(index: number): void {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        if (this.config.unisons[index].enabled) {
+            this.config.unisons[index].enabled = false;
+        }
+        else {
+            this.config.unisons[index].enabled = true
+        }
+    }
+
+    setUnisonWaveForm(index: number, waveForm: WaveForm): void {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        this.config.unisons[index].waveForm = waveForm;
+    }
+
+    setUnisonDetune(index: number, detune: number): void {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        this.config.unisons[index].detune = detune;
+    }
+
+    setUnisonGain(index: number, gain: number): void {
+        if (index < 0 || index > 1) throw new Error("invalid unison index");
+
+        this.config.unisons[index].gain = gain;
+    }
+
+    setFilter(config: FilterConfig): void {
+        this.config.filter = {...config};
+    }
+
+    setFilterFrequency(frequency: number) {
+        this.config.filter.frequency = frequency;
+    }
+
+    setFilterResonance(resonance: number) {
+        this.config.filter.resonance = resonance;
     }
 
     setVolumeEnvelope(config: ADSREnvelope) {
@@ -129,7 +170,35 @@ export default class Synth {
         if (config.sustain < 0 || config.sustain > 1)
             throw new Error("Invalid sustain")
 
-        this.config.volumeEnvelope = config;
+        this.config.volumeEnvelope = {...config};
+    }
+
+    setVolumeAttack(attack: number) {
+        if (attack > MAX_STAGE_TIME || attack < 0) 
+            throw new Error("Invalid attack time");
+
+        this.config.volumeEnvelope.attack = attack;
+    }
+
+    setVolumeDecay(decay: number) {
+        if (decay > MAX_STAGE_TIME || decay < 0)
+            throw new Error("Invalid decay time");
+
+        this.config.volumeEnvelope.decay = decay;
+    }
+
+    setVolumeSustain(sustain: number) {
+        if (sustain < 0 || sustain > 1) 
+            throw new Error("Invalid sustain value");
+
+        this.config.volumeEnvelope.sustain = sustain;
+    }
+    
+    setVolumeRelease(release: number) {
+        if (release > MAX_STAGE_TIME || release < 0)
+            throw new Error("Invalid release time");
+
+        this.config.volumeEnvelope.release = release;
     }
 
     setFilterEnvelop(config: FilterEnvelope) {
@@ -142,11 +211,61 @@ export default class Synth {
         if (config.sustain < 0 || config.sustain > 1)
             throw new Error("Invalid sustain")
 
-        this.config.filterEnvelope = config;
+        this.config.filterEnvelope = {...config};
+    }
+
+    setFilterAttack(attack: number) {
+        if (attack > MAX_STAGE_TIME || attack < 0) 
+            throw new Error("Invalid attack time");
+
+        this.config.filterEnvelope.attack = attack;
+    }
+
+    setFilterDecay(decay: number) {
+        if (decay > MAX_STAGE_TIME || decay < 0)
+            throw new Error("Invalid decay time");
+
+        this.config.filterEnvelope.decay = decay;
+    }
+
+    setFilterSustain(sustain: number) {
+        if (sustain < 0 || sustain > 1) 
+            throw new Error("Invalid sustain value");
+
+        this.config.filterEnvelope.sustain = sustain;
+    }
+    
+    setFilterRelease(release: number) {
+        if (release > MAX_STAGE_TIME || release < 0)
+            throw new Error("Invalid release time");
+
+        this.config.filterEnvelope.release = release;
     }
 
     setEcho(config: EchoConfig) {
-        this.config.echo = config;
+        this.config.echo = {...config};
+    }
+
+    setEchoDelay(delay: number) {
+        if (delay < 0 || delay > MAX_DELAY_TIME)
+            throw new Error("Invalid delay time");
+
+        this.config.echo.delay = delay;
+    }
+
+    setEchoFeedback(feedback: number) {
+        if(feedback < 0 || feedback > 1)
+            throw new Error("Invalid feedback value");
+            
+        this.config.echo.feedback = feedback;
+    }
+
+    getAudioContext(): AudioContext {
+        return this.audioContext;
+    }
+    
+    getConfig(): SynthConfig {
+        return {...this.config};
     }
 
     playNote(note: MIDINote, velocity: MIDIVelocity) {
@@ -255,12 +374,12 @@ export default class Synth {
         const now: number = this.audioContext.currentTime;
         const attackEndTime: number = now + this.config.filterEnvelope.attack;
         const decayDuration: number = this.config.filterEnvelope.decay;
+        const sustain: number = this.config.filterEnvelope.sustain;
         const frequencyMin = this.config.filterEnvelope.frequencyMin;
-        const frequencyMax = this.config.filterEnvelope.frequencyMax;
         const frequency = this.config.filter.frequency;
         filter.frequency.setValueAtTime(frequencyMin, now);
-        filter.frequency.linearRampToValueAtTime(frequencyMax, attackEndTime);
-        filter.frequency.setTargetAtTime(frequency, attackEndTime, decayDuration);
+        filter.frequency.linearRampToValueAtTime(frequency, attackEndTime);
+        filter.frequency.setTargetAtTime(frequency * sustain, attackEndTime, decayDuration);
 
         return filter;
     }
@@ -297,10 +416,6 @@ export default class Synth {
         effects.forEach((effect: AudioNode) => {
             effect.disconnect();
         })
-    }
-
-    getAudioContext(): AudioContext {
-        return this.audioContext;
     }
 
     private midiNoteToFrequency(midiNote: MIDINote) {
