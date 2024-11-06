@@ -246,6 +246,7 @@ export default class Synth {
             throw new Error("Invalid delay time");
 
         this.config.echo.delay = delay;
+        this.echo[0].delayTime.value = delay;
     }
 
     setEchoFeedback(feedback: number) {
@@ -253,6 +254,7 @@ export default class Synth {
             throw new Error("Invalid feedback value");
             
         this.config.echo.feedback = feedback;
+        this.echo[1].gain.value = feedback;
     }
 
     getAudioContext(): AudioContext {
