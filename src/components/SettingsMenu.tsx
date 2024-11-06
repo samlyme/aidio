@@ -363,7 +363,7 @@ function EchoSettings() {
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEL</span>
                 <CustomSlider 
-                    scale={(value) => 1000**value} 
+                    scale={(value) => 100**value} 
                     value={delay} onChange={handleDelay}/>
             </li>
             <li className=" flex items-center">

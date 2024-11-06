@@ -69,7 +69,7 @@ export const DEFAULT_ECHO_DELAY: number = 0.3;  // Default of 0.3 seconds for a 
 
 // Echo Feedback (ratio, 0 to 1)
 export const MAX_ECHO_FEEDBACK: number = 1;    // 1 (100%) for full feedback, creating an infinite loop
-export const MIN_ECHO_FEEDBACK: number = 0;
+export const MIN_ECHO_FEEDBACK: number = 0.01;
 export const DEFAULT_ECHO_FEEDBACK: number = 0.5;  // 0.5 (50%) for a balanced feedback level
 
 // Detune Amount (in cents)
