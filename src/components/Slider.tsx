@@ -2,7 +2,6 @@
 import Slider from '@mui/material/Slider';
 
 const CustomSlider = ({
-  defaultValue = 0.3,
   width = 200,
   height = 30,
   color = "#d9d9d9",
@@ -15,10 +14,6 @@ const CustomSlider = ({
 }) => {
   return (
     <Slider
-      defaultValue={defaultValue}
-      max = {max}
-      min = {min}
-      step = {step}
       sx={{
         width: width,
         height: height,

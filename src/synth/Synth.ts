@@ -65,7 +65,7 @@ export default class Synth {
 
             echo: {
                 delay: 0.5,
-                feedback: .1,
+                feedback: 0,
             }
         }
 
@@ -84,15 +84,6 @@ export default class Synth {
         this.echo[1].connect(this.echo[0]);
         this.echo[1].connect(this.limiter);
 
-        // wave form connection for visualization
-
-        this.analyser = this.audioContext.createAnalyser();
-        this.analyser.fftSize = 2048; 
-        this.volume.connect(this.analyser); 
-        this.analyser.connect(this.limiter);
-
-
-
         // master limiter for the sake of the user
         this.limiter.threshold.value = -3; // Set threshold in dB
         this.limiter.ratio.value = 20; // Set compression ratio
@@ -101,6 +92,10 @@ export default class Synth {
         this.limiter.knee.value = 0; // Set knee in dB
         this.limiter.connect(this.audioContext.destination)
 
+        // wave form connection for visualization
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 2048; 
+        this.limiter.connect(this.analyser); 
     }
 
     setVolume(value: number): void {
@@ -266,6 +261,10 @@ export default class Synth {
     
     getConfig(): SynthConfig {
         return {...this.config};
+    }
+
+    getAnalyser(): AnalyserNode {
+        return this.analyser;
     }
 
     playNote(note: MIDINote, velocity: MIDIVelocity) {
