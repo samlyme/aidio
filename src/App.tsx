@@ -18,6 +18,10 @@ import "./index.css"
 function App() {
 
   const [ready, setReady] = useState<boolean>(false);
+  const [isTextBoxFocused, setIsTextBoxFocused] = useState(false);
+
+  const handleTextBoxFocus = () => setIsTextBoxFocused(true);
+  const handleTextBoxBlur = () => setIsTextBoxFocused(false);
 
   return (
     <>
@@ -131,14 +135,22 @@ function App() {
 
             <div className="  border w-[45vw] border-black">
               <ul className=" h-full">
-                <li className="h-full "><textarea placeholder="SEND A MESSAGE" className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"></textarea></li>
+                <li className="h-full ">
+                <textarea
+                placeholder="SEND A MESSAGE"
+                className="resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"
+                onFocus={() => setIsTextBoxFocused(true)}
+                onBlur={() => setIsTextBoxFocused(false)} 
+              ></textarea>
+                </li>
               </ul>
             </div>
 
 
             </div>
             
-            <InteractivePiano/></>
+            <InteractivePiano isTextBoxFocused={isTextBoxFocused} />
+            </>
           )
           :
           <button onClick={() => { setReady(true); }}>
