@@ -452,7 +452,7 @@ To suppress this warning, you need to explicitly provide the \`palette.${t}Chann
             }
         }
     }
-}`),dx=void 0,px=new cx(dx),hx=px.getGenerativeModel({model:"gemini-1.5-pro",generationConfig:{responseMimeType:"application/json",responseSchema:fx},systemInstruction:`
+}`),dx="AIzaSyBjwhQK5i0ZcGlZOhGkC6ZilQwko1P1RbI",px=new cx(dx),hx=px.getGenerativeModel({model:"gemini-1.5-pro",generationConfig:{responseMimeType:"application/json",responseSchema:fx},systemInstruction:`
   Always change all settings.
 
   Make 2 unisons.
