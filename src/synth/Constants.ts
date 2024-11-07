@@ -86,13 +86,13 @@ export const DEFAULT_SYNTH_CONFIG: SynthConfig = {
 
     unisons: [
         {
-            enabled: false,
+            enabled: true,
             waveForm: DEFAULT_UNISON0_WAVEFORM,
             detune: DEFAULT_DETUNE,
             gain: 0.8,
         },
         {
-            enabled: false,
+            enabled: true,
             waveForm: DEFAULT_UNISON1_WAVEFORM,
             detune: DEFAULT_DETUNE,
             gain: 0.8,

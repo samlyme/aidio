@@ -12,26 +12,28 @@ import '@fontsource/roboto/700.css';
 
 
 import "./index.css"
-import { Lan } from "@mui/icons-material";
+import ConfigLoader from "./synth/ConfigLoader";
+import { DEFAULT_SYNTH_CONFIG } from "./synth/Constants";
 
 
 
 
 function App() {
+  const configLoader = ConfigLoader.getConfigLoader();
 
   const [ready, setReady] = useState<boolean>(false);
 
   return (
     <>
-
-
-
       {
         ready ?
           ( 
             <>
             <SettingsMenu />
             <InteractivePiano/>
+            <button onClick={() => {configLoader.load(DEFAULT_SYNTH_CONFIG)}}>
+              reset
+            </button>
             </>
           )
           :
