@@ -2,7 +2,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
 import CustomSlider from "./Slider"
 import { useEffect, useState } from "react"
-import { WaveForm } from "../synth/Types"
+import { SynthConfig, WaveForm } from "../synth/Types"
 import Synth from "../synth/Synth"
 import Oscilloscope from "./Oscilloscope"
 import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
@@ -22,6 +22,52 @@ export default function SettingsMenu() {
                 <EffectsMenu />
 
                 <PromptMenu />
+                <button onClick={
+                    () => {
+                        const test: SynthConfig = JSON.parse(`
+{
+  "echo": {
+    "delay": 0.1,
+    "feedback": 0.2
+  },
+  "filter": {
+    "frequency": 500,
+    "resonance": 0.5
+  },
+  "filterEnvelope": {
+    "attack": 0.01,
+    "decay": 0.1,
+    "frequencyMin": 200,
+    "release": 0.2,
+    "sustain": 0.8
+  },
+  "unisons": [
+    {
+      "detune": 0.5,
+      "enabled": true,
+      "gain": 0.7,
+      "waveForm": "sawtooth"
+    },
+    {
+      "detune": -0.5,
+      "enabled": true,
+      "gain": 0.7,
+      "waveForm": "sawtooth"
+    }
+  ],
+  "volumeEnvelope": {
+    "attack": 0.02,
+    "decay": 0.15,
+    "release": 0.3,
+    "sustain": 0.7
+  },
+  "waveForm": "sine"
+}`);
+                            configLoader.load(test);
+                    }
+                }>
+                    load
+                </button>
             </div>
         </>
     )
