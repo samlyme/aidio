@@ -8,6 +8,8 @@ import Oscilloscope from "./Oscilloscope"
 import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
 import ConfigLoader from "../synth/ConfigLoader"
 
+const configLoader = ConfigLoader.getConfigLoader();
+
 export default function SettingsMenu() {
 
     return (
@@ -26,8 +28,6 @@ export default function SettingsMenu() {
 }
 
 function VoicesMenu() {
-    const configLoader = ConfigLoader.getConfigLoader();
-
     // this is probably the stupidest thing ive ever done but it works
     const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sawtooth");
     configLoader.setWaveform = setMainWaveForm;
@@ -37,6 +37,7 @@ function VoicesMenu() {
 
     const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("triangle");
     configLoader.setUnison1WaveForm = setUnison1WaveForm;
+    
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -52,7 +53,7 @@ function VoicesMenu() {
     configLoader.setUnison0Detune = setUnison0Detune;
 
     const [unison1Detune, setUnison1Detune] = useState<number>(DEFAULT_DETUNE);
-    configLoader.setUnison1Detune;
+    configLoader.setUnison1Detune = setUnison1Detune;
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -218,7 +219,6 @@ function EnvelopesMenu() {
 
 function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
     const synth = Synth.getSynth();
-    const configLoader = ConfigLoader.getConfigLoader();
 
     const [attack, setAttack] = useState<number>(target == "filter" ? DEFAULT_FILTER_ATTACK : DEFAULT_VOLUME_ATTACK);
     const [decay, setDecay] = useState<number>(target == "filter" ? DEFAULT_FILTER_DECAY : DEFAULT_VOLUME_DECAY);
@@ -351,7 +351,10 @@ function FilterSettings() {
     const synth = Synth.getSynth();
 
     const [frequency, setFrequency] = useState(DEFAULT_FILTER_FREQUENCY);
+    configLoader.setFilterFrequency = setFrequency;
+
     const [resonance, setResonance] = useState(DEFAULT_FILTER_RESONANCE);
+    configLoader.setFilterResonance = setResonance;
 
     const handleFrequency = (
         _: React.MouseEvent<HTMLElement>,
@@ -393,7 +396,11 @@ function FilterSettings() {
 
 function EchoSettings() {
     const [delay, setDelay] = useState(DEFAULT_ECHO_DELAY);
+    configLoader.setEchoDelay = setDelay;
+
     const [feedback, setFeedback] = useState(DEFAULT_ECHO_FEEDBACK);
+    configLoader.setEchoFeedback = setFeedback;
+
     const synth = Synth.getSynth();
 
     const handleDelay = (
@@ -402,7 +409,7 @@ function EchoSettings() {
     ) => {
         setDelay(newDelay)
         
-        synth.setEchoDelay(newDelay/50);
+        synth.setEchoDelay(newDelay);
         console.log(synth.getConfig());
         
     };
@@ -414,7 +421,7 @@ function EchoSettings() {
         setFeedback(newFeedback)
         console.log(newFeedback);
         
-        synth.setEchoFeedback(newFeedback/100);
+        synth.setEchoFeedback(newFeedback);
     };
     return (
         <>

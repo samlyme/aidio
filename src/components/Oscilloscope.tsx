@@ -5,12 +5,14 @@ export default function Oscilloscope() {
     const analyser = Synth.getSynth().getAnalyser();
     const bufferLength = analyser.frequencyBinCount;
 
-    const canvasRef = useRef<any>(null);
-    const contextRef = useRef<any>(null);
+    const canvasRef = useRef<any | null>(null);
+    const contextRef = useRef<any | null>(null);
     const waveArray = new Uint8Array(bufferLength);
 
     useEffect(() => {
         contextRef.current = canvasRef.current.getContext("2d");
+        console.log(canvasRef.current);
+        
         draw();
     })
 
@@ -22,15 +24,17 @@ export default function Oscilloscope() {
 
         const canvasCtx = contextRef.current;
 
-        canvasCtx.strokeStyle = "#000000";
-        canvasCtx.lineWidth = 3;
-        canvasCtx.clearRect(0, 0, width, height);
-        canvasCtx.beginPath();
-        for (var i = 0; i < waveArray.length; i += 4) {
-            const x = (i / waveArray.length) * (width);
-            canvasCtx.lineTo(x, (height/2) + waveArray[i] - 128);
+        if (canvasCtx) {
+            canvasCtx.strokeStyle = "#000000";
+            canvasCtx.lineWidth = 3;
+            canvasCtx.clearRect(0, 0, width, height);
+            canvasCtx.beginPath();
+            for (let i = 0; i < waveArray.length; i += 4) {
+                const x = (i / waveArray.length) * (width);
+                canvasCtx.lineTo(x, (height / 2) + waveArray[i] - 128);
+            }
+            canvasCtx.stroke();
         }
-        canvasCtx.stroke();
     }
 
     return (

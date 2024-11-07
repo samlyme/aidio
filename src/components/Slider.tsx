@@ -70,7 +70,7 @@ const CustomSlider = ({
         value={value}
         step={(max - min) / 100}
         {...props} />
-        <span className="ml-7">{value}</span>
+        <span className="ml-7">{value.toFixed(1)}</span>
     </>
   );
 };

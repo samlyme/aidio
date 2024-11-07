@@ -23,7 +23,7 @@ export default class Synth {
 
         this.audioContext = new AudioContext();
 
-        this.config = DEFAULT_SYNTH_CONFIG;
+        this.config = JSON.parse(JSON.stringify(DEFAULT_SYNTH_CONFIG));
 
         this.volume = this.audioContext.createGain();
         this.echo = [this.audioContext.createDelay(), this.audioContext.createGain()];
@@ -58,6 +58,10 @@ export default class Synth {
         if (value > 1 || value < 0) return;
 
         this.volume.gain.value = value;
+    }
+
+    setConfig(config: SynthConfig) {
+        this.config = JSON.parse(JSON.stringify(config));
     }
 
     setWaveform(value: WaveForm): void {
