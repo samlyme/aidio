@@ -1,4 +1,4 @@
-import { MAX_DELAY_TIME, MAX_STAGE_TIME } from "./Constants";
+import { DEFAULT_SYNTH_CONFIG, MAX_DELAY_TIME, MAX_STAGE_TIME } from "./Constants";
 import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./MidiUtils";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode, WaveForm, FilterConfig, EchoConfig } from "./Types";
 
@@ -23,51 +23,7 @@ export default class Synth {
 
         this.audioContext = new AudioContext();
 
-        
-
-        this.config = {
-            waveForm: "triangle",
-
-            unisons: [
-                {
-                    enabled: true,
-                    waveForm: "triangle",
-                    detune: 5,
-                    gain: 0.8,
-                },
-                { 
-                    enabled: true,
-                    waveForm: "sawtooth",
-                    detune: 7,
-                    gain: 0.8,
-                }
-            ],
-
-            filter: {
-                frequency: 5000,
-                resonance: 10,
-            },
-
-            volumeEnvelope: {
-                attack: 0.01 * MAX_STAGE_TIME,
-                decay: 1 * MAX_STAGE_TIME,
-                sustain: 0.5,
-                release: 1 * MAX_STAGE_TIME,
-            },
-
-            filterEnvelope: {
-                attack: 0.03 * MAX_STAGE_TIME,
-                decay: 0.3 * MAX_STAGE_TIME,
-                sustain: 0.5,
-                release: 1 * MAX_STAGE_TIME,
-                frequencyMin: 1000,
-            },
-
-            echo: {
-                delay: 0.5,
-                feedback: 0,
-            }
-        }
+        this.config = DEFAULT_SYNTH_CONFIG;
 
         this.volume = this.audioContext.createGain();
         this.echo = [this.audioContext.createDelay(), this.audioContext.createGain()];
@@ -152,6 +108,8 @@ export default class Synth {
     }
 
     setFilterResonance(resonance: number) {
+        console.log(resonance);
+         
         this.config.filter.resonance = resonance;
     }
 

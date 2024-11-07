@@ -7,8 +7,8 @@ const CustomSlider = ({
   color = "#d9d9d9",
   borderRadius = 0,
   thumbOpacity = 0,
-  // max = 1,
-  // min = 0,
+  min = 0,
+  max = 1,
   // step = 0.01,
   ...props
 }) => {
@@ -23,7 +23,9 @@ const CustomSlider = ({
           opacity: thumbOpacity,
         },
       }}
-      valueLabelDisplay="on"
+      min={min}
+      max={max}
+      step={(max-min)/100}
       {...props}
     />
   );

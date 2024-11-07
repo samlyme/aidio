@@ -5,7 +5,8 @@ import { useEffect, useState } from "react"
 import { WaveForm } from "../synth/Types"
 import Synth from "../synth/Synth"
 import Oscilloscope from "./Oscilloscope"
-import { DEFAULT_DETUNE, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_MASTER_VOLUME, MIN_DETUNE, MIN_MASTER_VOLUME } from "../synth/Constants"
+import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
+import ConfigLoader from "../synth/ConfigLoader"
 
 export default function SettingsMenu() {
 
@@ -25,9 +26,17 @@ export default function SettingsMenu() {
 }
 
 function VoicesMenu() {
+    const configLoader = ConfigLoader.getConfigLoader();
+
+    // this is probably the stupidest thing ive ever done but it works
     const [mainWaveForm, setMainWaveForm] = useState<WaveForm>("sawtooth");
+    configLoader.setWaveform = setMainWaveForm;
+
     const [unison0WaveForm, setUnison0WaveForm] = useState<WaveForm>("square");
+    configLoader.setUnison0WaveForm = setUnison0WaveForm;
+
     const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("triangle");
+    configLoader.setUnison1WaveForm = setUnison1WaveForm;
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -36,9 +45,14 @@ function VoicesMenu() {
         synth.setUnisonWaveForm(1, unison1WaveForm);
     }, [mainWaveForm, unison0WaveForm, unison1WaveForm]);
 
+    // not needed
     const [mainVolume, setMainVolume] = useState<number>(DEFAULT_MASTER_VOLUME);
+
     const [unison0Detune, setUnison0Detune] = useState<number>(DEFAULT_DETUNE);
+    configLoader.setUnison0Detune = setUnison0Detune;
+
     const [unison1Detune, setUnison1Detune] = useState<number>(DEFAULT_DETUNE);
+    configLoader.setUnison1Detune;
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -204,11 +218,25 @@ function EnvelopesMenu() {
 
 function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
     const synth = Synth.getSynth();
+    const configLoader = ConfigLoader.getConfigLoader();
 
     const [attack, setAttack] = useState<number>(target == "filter" ? DEFAULT_FILTER_ATTACK : DEFAULT_VOLUME_ATTACK);
     const [decay, setDecay] = useState<number>(target == "filter" ? DEFAULT_FILTER_DECAY : DEFAULT_VOLUME_DECAY);
     const [sustain, setSustain] = useState<number>(target == "filter" ? DEFAULT_FILTER_SUSTAIN : DEFAULT_VOLUME_SUSTAIN);
     const [release, setRelease] = useState<number>(target == "filter" ? DEFAULT_FILTER_RELEASE : DEFAULT_VOLUME_RELEASE);
+
+    if (target == "filter") {
+        configLoader.setFilterAttack = setAttack;
+        configLoader.setFilterDecay = setDecay;
+        configLoader.setFilterSustain = setSustain;
+        configLoader.setFilterRelease = setRelease;
+    }
+    else {
+        configLoader.setVolumeAttack = setAttack;
+        configLoader.setVolumeDecay = setDecay;
+        configLoader.setVolumeSustain = setSustain;
+        configLoader.setVolumeRelease = setRelease;
+    }
 
     const handleAttack = (
         _: React.MouseEvent<HTMLElement>,
@@ -216,8 +244,8 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
     ) => {
         setAttack(newAttack)
 
-        if (target == "filter") synth.setFilterAttack(newAttack / 50);
-        else synth.setVolumeAttack(newAttack / 50);
+        if (target == "filter") synth.setFilterAttack(newAttack);
+        else synth.setVolumeAttack(newAttack);
     };
 
     const handleDecay = (
@@ -225,8 +253,8 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
         newDecay: number,
     ) => {
         setDecay(newDecay)
-        if (target == "filter") synth.setFilterDecay(newDecay / 50);
-        else synth.setVolumeDecay(newDecay / 50);
+        if (target == "filter") synth.setFilterDecay(newDecay);
+        else synth.setVolumeDecay(newDecay);
     };
 
     const handleSustain = (
@@ -234,8 +262,8 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
         newSustain: number,
     ) => {
         setSustain(newSustain)
-        if (target == "filter") synth.setFilterSustain(newSustain / 100);
-        else synth.setVolumeSustain(newSustain / 100);
+        if (target == "filter") synth.setFilterSustain(newSustain);
+        else synth.setVolumeSustain(newSustain);
     };
 
     const handleRelease = (
@@ -243,8 +271,8 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
         newRelease: number,
     ) => {
         setRelease(newRelease)
-        if (target == "filter") synth.setFilterRelease(newRelease / 50);
-        else synth.setVolumeRelease(newRelease / 50);
+        if (target == "filter") synth.setFilterRelease(newRelease);
+        else synth.setVolumeRelease(newRelease);
     };
 
     return (
@@ -252,23 +280,45 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">ATK</span>
                 <CustomSlider 
-                    scale={(value) => 1000**value} 
+                    min={target == "filter" ? 
+                        MIN_FILTER_ATTACK : MIN_VOLUME_ATTACK
+                    }
+                    max={target == "filter" ? 
+                        MAX_FILTER_ATTACK : MAX_VOLUME_ATTACK
+                    }
                     value={attack} onChange={handleAttack} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEC</span>
                 <CustomSlider 
-                    scale={(value) => 1000**value} 
+                    min={target == "filter" ? 
+                        MIN_FILTER_DECAY : MIN_VOLUME_DECAY
+                    }
+                    max={target == "filter" ? 
+                        MAX_FILTER_DECAY : MAX_VOLUME_DECAY
+                    }
                     value={decay} onChange={handleDecay} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">SUS</span>
-                <CustomSlider value={sustain} onChange={handleSustain} />
+                <CustomSlider 
+                    min={target == "filter" ? 
+                        MIN_FILTER_SUSTAIN : MIN_VOLUME_SUSTAIN
+                    }
+                    max={target == "filter" ? 
+                        MAX_FILTER_SUSTAIN : MAX_VOLUME_SUSTAIN
+                    }
+                value={sustain} onChange={handleSustain} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">REL</span>
                 <CustomSlider 
-                    scale={(value) => 1000**value} 
+                    min={target == "filter" ? 
+                        MIN_FILTER_RELEASE : MIN_VOLUME_RELEASE
+                    }
+                    max={target == "filter" ? 
+                        MAX_FILTER_RELEASE : MAX_VOLUME_RELEASE
+                    }
                     value={release} onChange={handleRelease} />
             </li>
         </>
@@ -298,16 +348,17 @@ function EffectsMenu() {
 
 function FilterSettings() {
     // TODO: fix the frequency mapping
-    const [frequency, setFrequency] = useState(.3);
-    const [resonance, setResonance] = useState(.3);
     const synth = Synth.getSynth();
+
+    const [frequency, setFrequency] = useState(DEFAULT_FILTER_FREQUENCY);
+    const [resonance, setResonance] = useState(DEFAULT_FILTER_RESONANCE);
 
     const handleFrequency = (
         _: React.MouseEvent<HTMLElement>,
         newFrequency: number,
     ) => {
         setFrequency(newFrequency)
-        synth.setFilterFrequency(newFrequency * 200);
+        synth.setFilterFrequency(newFrequency);
     };
 
     const handleResonance = (
@@ -315,7 +366,7 @@ function FilterSettings() {
         newResonance: number,
     ) => {
         setResonance(newResonance)
-        synth.setFilterResonance(newResonance / 3);
+        synth.setFilterResonance(newResonance);
     };
 
     return (
@@ -323,19 +374,26 @@ function FilterSettings() {
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">FRQ</span>
                 {/* filter freq usually works in log scale */}
-                <CustomSlider scale={(value) => 2**value} value={frequency} onChange={handleFrequency} />
+                <CustomSlider 
+                min={MIN_FILTER_FREQUENCY}
+                max={MAX_FILTER_FREQUENCY}
+                scale={(value) => 2**value} 
+                value={frequency} onChange={handleFrequency} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">RES</span>
-                <CustomSlider value={resonance} onChange={handleResonance} />
+                <CustomSlider 
+                min={MIN_FILTER_RESONANCE}
+                max={MAX_FILTER_RESONANCE}
+                value={resonance} onChange={handleResonance} />
             </li>
         </>
     )
 }
 
 function EchoSettings() {
-    const [delay, setDelay] = useState(.3);
-    const [feedback, setFeedback] = useState(.3);
+    const [delay, setDelay] = useState(DEFAULT_ECHO_DELAY);
+    const [feedback, setFeedback] = useState(DEFAULT_ECHO_FEEDBACK);
     const synth = Synth.getSynth();
 
     const handleDelay = (
