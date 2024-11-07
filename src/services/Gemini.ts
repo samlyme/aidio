@@ -14,7 +14,18 @@ const model = genAI.getGenerativeModel({
   systemInstruction: `
   Always change all settings.
 
-  Make 2 unisons.`,
+  Make 2 unisons.
+
+  Attack, Decay, and Release should have values between 0 and 2.
+  Sustain should have a value between 0 and 1.
+  
+  Gain is a value between 0 and 1.
+  Detune is a value between 0 and 10.
+  If a user ask for an open sound, set detune to 7, attack decay and release to a value between 0.7 and 2, and echo feedback to 0.4.
+  Filter frequency should be set between 1000 and 7000
+  Plucky sounds require attack and decay set to 0.03, sustain to 0.1, and release to 0.7.
+  Aggressive sounds should have filter set to a value between 10000 and 15000.
+  `,
 });
 
 
