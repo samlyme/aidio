@@ -46,18 +46,8 @@ export default class ConfigLoader {
         if (this.setUnison0WaveForm) this.setUnison0WaveForm(config.unisons[0].waveForm);
         if (this.setUnison1WaveForm) this.setUnison1WaveForm(config.unisons[1].waveForm);
 
-        if (this.setUnison0Detune) {
-            console.log("setu0d", config.unisons[0].detune);
-            
-            this.setUnison0Detune(config.unisons[0].detune);
-        }
-
-        // not working
-        if (this.setUnison1Detune) {
-            console.log("setu1d", config.unisons[1].detune);
-            
-            this.setUnison1Detune(config.unisons[1].detune);
-        }
+        if (this.setUnison0Detune)this.setUnison0Detune(config.unisons[0].detune);
+        if (this.setUnison1Detune)this.setUnison1Detune(config.unisons[1].detune);
 
         if (this.setVolumeAttack) this.setVolumeAttack(config.volumeEnvelope.attack);
         if (this.setVolumeDecay) this.setVolumeDecay(config.volumeEnvelope.decay);
