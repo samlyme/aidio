@@ -10,7 +10,7 @@ import ConfigLoader from "../synth/ConfigLoader"
 
 const configLoader = ConfigLoader.getConfigLoader();
 
-export default function SettingsMenu() {
+export default function SettingsMenu({ setFocus }) {
 
     return (
         <>
@@ -21,7 +21,7 @@ export default function SettingsMenu() {
 
                 <EffectsMenu />
 
-                <PromptMenu />
+                <PromptMenu setFocus={setFocus} />
             </div>
         </>
     )
@@ -37,7 +37,7 @@ function VoicesMenu() {
 
     const [unison1WaveForm, setUnison1WaveForm] = useState<WaveForm>("triangle");
     configLoader.setUnison1WaveForm = setUnison1WaveForm;
-    
+
 
     useEffect(() => {
         const synth = Synth.getSynth();
@@ -140,11 +140,11 @@ function VoiceSettings({ waveform, setWaveForm, volume, setVolume }) {
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">VOL</span>
-                <CustomSlider 
+                <CustomSlider
                     min={MIN_MASTER_VOLUME}
                     max={MAX_MASTER_VOLUME}
                     step={0.01}
-                    value={volume} 
+                    value={volume}
                     onChange={handleVolume} />
             </li>
         </div>
@@ -168,7 +168,7 @@ function UnisonSettings({ waveform, setWaveForm, detune, setDetune }) {
         if (newDetune !== null) {
             setDetune(newDetune);
             console.log(newDetune);
-            
+
         }
     };
 
@@ -192,10 +192,10 @@ function UnisonSettings({ waveform, setWaveForm, detune, setDetune }) {
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DET</span>
-                <CustomSlider 
+                <CustomSlider
                     min={MIN_DETUNE}
                     max={MAX_DETUNE}
-                    value={detune} 
+                    value={detune}
                     onChange={handleDetune} />
             </li>
         </div>
@@ -279,44 +279,44 @@ function EnvelopesSettings({ target }: { target: "filter" | "volume" }) {
         <>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">ATK</span>
-                <CustomSlider 
-                    min={target == "filter" ? 
+                <CustomSlider
+                    min={target == "filter" ?
                         MIN_FILTER_ATTACK : MIN_VOLUME_ATTACK
                     }
-                    max={target == "filter" ? 
+                    max={target == "filter" ?
                         MAX_FILTER_ATTACK : MAX_VOLUME_ATTACK
                     }
                     value={attack} onChange={handleAttack} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEC</span>
-                <CustomSlider 
-                    min={target == "filter" ? 
+                <CustomSlider
+                    min={target == "filter" ?
                         MIN_FILTER_DECAY : MIN_VOLUME_DECAY
                     }
-                    max={target == "filter" ? 
+                    max={target == "filter" ?
                         MAX_FILTER_DECAY : MAX_VOLUME_DECAY
                     }
                     value={decay} onChange={handleDecay} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">SUS</span>
-                <CustomSlider 
-                    min={target == "filter" ? 
+                <CustomSlider
+                    min={target == "filter" ?
                         MIN_FILTER_SUSTAIN : MIN_VOLUME_SUSTAIN
                     }
-                    max={target == "filter" ? 
+                    max={target == "filter" ?
                         MAX_FILTER_SUSTAIN : MAX_VOLUME_SUSTAIN
                     }
-                value={sustain} onChange={handleSustain} />
+                    value={sustain} onChange={handleSustain} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">REL</span>
-                <CustomSlider 
-                    min={target == "filter" ? 
+                <CustomSlider
+                    min={target == "filter" ?
                         MIN_FILTER_RELEASE : MIN_VOLUME_RELEASE
                     }
-                    max={target == "filter" ? 
+                    max={target == "filter" ?
                         MAX_FILTER_RELEASE : MAX_VOLUME_RELEASE
                     }
                     value={release} onChange={handleRelease} />
@@ -377,18 +377,18 @@ function FilterSettings() {
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">FRQ</span>
                 {/* filter freq usually works in log scale */}
-                <CustomSlider 
-                min={MIN_FILTER_FREQUENCY}
-                max={MAX_FILTER_FREQUENCY}
-                scale={(value) => 2**value} 
-                value={frequency} onChange={handleFrequency} />
+                <CustomSlider
+                    min={MIN_FILTER_FREQUENCY}
+                    max={MAX_FILTER_FREQUENCY}
+                    scale={(value) => 2 ** value}
+                    value={frequency} onChange={handleFrequency} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">RES</span>
-                <CustomSlider 
-                min={MIN_FILTER_RESONANCE}
-                max={MAX_FILTER_RESONANCE}
-                value={resonance} onChange={handleResonance} />
+                <CustomSlider
+                    min={MIN_FILTER_RESONANCE}
+                    max={MAX_FILTER_RESONANCE}
+                    value={resonance} onChange={handleResonance} />
             </li>
         </>
     )
@@ -408,10 +408,10 @@ function EchoSettings() {
         newDelay: number,
     ) => {
         setDelay(newDelay)
-        
+
         synth.setEchoDelay(newDelay);
         console.log(synth.getConfig());
-        
+
     };
 
     const handleFeedback = (
@@ -420,30 +420,37 @@ function EchoSettings() {
     ) => {
         setFeedback(newFeedback)
         console.log(newFeedback);
-        
+
         synth.setEchoFeedback(newFeedback);
     };
     return (
         <>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">DEL</span>
-                <CustomSlider 
-                    scale={(value) => 100**value} 
-                    value={delay} onChange={handleDelay}/>
+                <CustomSlider
+                    scale={(value) => 100 ** value}
+                    value={delay} onChange={handleDelay} />
             </li>
             <li className=" flex items-center">
                 <span className=" pl-2 mr-2">FBK</span>
-                <CustomSlider value={feedback} onChange={handleFeedback}/>
+                <CustomSlider value={feedback} onChange={handleFeedback} />
             </li>
         </>
     )
 }
 
-function PromptMenu() {
+function PromptMenu({ setFocus }) {
     return (
         <div className="  border w-[45vw] border-black">
             <ul className=" h-full">
-                <li className="h-full "><textarea placeholder="SEND A MESSAGE" className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"></textarea></li>
+                <li className="h-full ">
+                    <textarea
+                        className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"
+                        placeholder="SEND A MESSAGE"
+                        onFocus={() => setFocus("prompt")}
+                        onBlur={() => setFocus("main")}
+                    />
+                </li>
             </ul>
         </div>
     )

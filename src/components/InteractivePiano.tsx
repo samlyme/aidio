@@ -1,8 +1,9 @@
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
 import 'react-piano/dist/styles.css';
 import Synth from '../synth/Synth';
+import { focus } from '../Context';
 
-export default function InteractivePiano() {
+export default function InteractivePiano({ focus }: { focus: focus }) {
     const firstNote = MidiNumbers.fromNote('c3');
     const lastNote = MidiNumbers.fromNote('f4');
     const keyboardShortcuts = KeyboardShortcuts.create({
@@ -18,9 +19,11 @@ export default function InteractivePiano() {
         <Piano className="ml-20 pb-10"
           noteRange={{ first: firstNote, last: lastNote }}
           playNote={(midiNumber) => {
+            if (focus == "prompt") return;
             synth.playNote(midiNumber, 80);
           }}
           stopNote={(midiNumber) => {
+            if (focus == "prompt") return;
             synth.releaseNote(midiNumber);
           }}
           width={1000}
