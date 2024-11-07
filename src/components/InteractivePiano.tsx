@@ -4,7 +4,7 @@ import Synth from '../synth/Synth';
 
 export default function InteractivePiano() {
     const firstNote = MidiNumbers.fromNote('c3');
-    const lastNote = MidiNumbers.fromNote('f5');
+    const lastNote = MidiNumbers.fromNote('f4');
     const keyboardShortcuts = KeyboardShortcuts.create({
         firstNote: firstNote,
         lastNote: lastNote,
@@ -15,7 +15,7 @@ export default function InteractivePiano() {
 
 
     return (
-        <Piano
+        <Piano className="ml-20 pb-10"
           noteRange={{ first: firstNote, last: lastNote }}
           playNote={(midiNumber) => {
             synth.playNote(midiNumber, 80);

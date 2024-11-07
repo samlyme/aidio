@@ -1,4 +1,4 @@
-import { MAX_DELAY_TIME, MAX_STAGE_TIME } from "./Constants";
+import { DEFAULT_SYNTH_CONFIG, MAX_DELAY_TIME, MAX_STAGE_TIME } from "./Constants";
 import { handleMIDIAccessFailure, handleMIDIAccessSuccess } from "./MidiUtils";
 import { ADSREnvelope, FilterEnvelope, NoteChain, SynthConfig, UnisonConfig, MIDINote, MIDIVelocity, EchoNode, WaveForm, FilterConfig, EchoConfig } from "./Types";
 
@@ -9,6 +9,7 @@ export default class Synth {
     private volume: GainNode;
     private config: SynthConfig;
     private activeNotes: Map<MIDINote, NoteChain> = new Map();
+    private analyser: AnalyserNode;
 
     private static instance: Synth;
 
@@ -22,49 +23,7 @@ export default class Synth {
 
         this.audioContext = new AudioContext();
 
-        this.config = {
-            waveForm: "triangle",
-
-            unisons: [
-                {
-                    enabled: true,
-                    waveForm: "triangle",
-                    detune: 5,
-                    gain: 0.8,
-                },
-                { 
-                    enabled: true,
-                    waveForm: "sawtooth",
-                    detune: 7,
-                    gain: 0.8,
-                }
-            ],
-
-            filter: {
-                frequency: 5000,
-                resonance: 10,
-            },
-
-            volumeEnvelope: {
-                attack: 0.01 * MAX_STAGE_TIME,
-                decay: 1 * MAX_STAGE_TIME,
-                sustain: 0.5,
-                release: 1 * MAX_STAGE_TIME,
-            },
-
-            filterEnvelope: {
-                attack: 0.03 * MAX_STAGE_TIME,
-                decay: 0.3 * MAX_STAGE_TIME,
-                sustain: 0.5,
-                release: 1 * MAX_STAGE_TIME,
-                frequencyMin: 1000,
-            },
-
-            echo: {
-                delay: 0.5,
-                feedback: .1,
-            }
-        }
+        this.config = DEFAULT_SYNTH_CONFIG;
 
         this.volume = this.audioContext.createGain();
         this.echo = [this.audioContext.createDelay(), this.audioContext.createGain()];
@@ -88,6 +47,11 @@ export default class Synth {
         this.limiter.release.value = 0.05; // Set release time in seconds
         this.limiter.knee.value = 0; // Set knee in dB
         this.limiter.connect(this.audioContext.destination)
+
+        // wave form connection for visualization
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 2048; 
+        this.limiter.connect(this.analyser); 
     }
 
     setVolume(value: number): void {
@@ -144,6 +108,8 @@ export default class Synth {
     }
 
     setFilterResonance(resonance: number) {
+        console.log(resonance);
+         
         this.config.filter.resonance = resonance;
     }
 
@@ -238,6 +204,7 @@ export default class Synth {
             throw new Error("Invalid delay time");
 
         this.config.echo.delay = delay;
+        this.echo[0].delayTime.value = delay;
     }
 
     setEchoFeedback(feedback: number) {
@@ -245,6 +212,7 @@ export default class Synth {
             throw new Error("Invalid feedback value");
             
         this.config.echo.feedback = feedback;
+        this.echo[1].gain.value = feedback;
     }
 
     getAudioContext(): AudioContext {
@@ -253,6 +221,10 @@ export default class Synth {
     
     getConfig(): SynthConfig {
         return {...this.config};
+    }
+
+    getAnalyser(): AnalyserNode {
+        return this.analyser;
     }
 
     playNote(note: MIDINote, velocity: MIDIVelocity) {
