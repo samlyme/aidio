@@ -1,7 +1,8 @@
 import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
 import SettingsMenu from "./components/SettingsMenu";
-import LandingPage from "./components/LandiPage";
+import LandingPage from "./components/LandingPage";
+
 
 
 import '@fontsource/roboto/300.css';
@@ -14,7 +15,6 @@ import '@fontsource/roboto/700.css';
 import "./index.css"
 import ConfigLoader from "./synth/ConfigLoader";
 import { DEFAULT_SYNTH_CONFIG } from "./synth/Constants";
-
 
 
 
@@ -39,9 +39,13 @@ function App() {
           :
          <>
          <LandingPage/>
-          <button onClick={() => { setReady(true); }}>
+         <div className="flex items-center justify-center">
+          <button className="text-2xl shadow-lg p-2 mt-4 bg-[#d9d9d9] border-2 border-[#d9d9d9] hover:border-black w-[50%]" onClick={() => { setReady(true); }}>
             start
           </button>
+          </div>
+
+         
           </>
       }
 
