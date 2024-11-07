@@ -2,7 +2,7 @@ import { useState } from "react"
 import InteractivePiano from "./components/InteractivePiano";
 import SettingsMenu from "./components/SettingsMenu";
 
-import LandingPage from "./components/LandiPage";
+import LandingPage from "./components/LandingPage";
 import ConfigLoader from "./synth/ConfigLoader";
 import { DEFAULT_SYNTH_CONFIG } from "./synth/Constants";
 
