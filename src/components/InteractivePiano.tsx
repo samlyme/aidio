@@ -1,6 +1,7 @@
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
-import 'react-piano/dist/styles.css';
+// import 'react-piano/dist/styles.css';
 import Synth from '../synth/Synth';
+import './customPianoStyles.css'; 
 
 export default function InteractivePiano() {
     const firstNote = MidiNumbers.fromNote('c3');
@@ -15,7 +16,7 @@ export default function InteractivePiano() {
 
 
     return (
-        <Piano className="ml-20 pb-10"
+        <Piano className="ml-[15%] pb-10"
           noteRange={{ first: firstNote, last: lastNote }}
           playNote={(midiNumber) => {
             synth.playNote(midiNumber, 80);
