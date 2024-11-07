@@ -2,12 +2,15 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
 import CustomSlider from "./Slider"
 import { useEffect, useState } from "react"
+import 'regenerator-runtime/runtime'
 import { SynthConfig, WaveForm } from "../synth/Types"
 import Synth from "../synth/Synth"
 import Oscilloscope from "./Oscilloscope"
-import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
+import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_SYNTH_CONFIG, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
 import ConfigLoader from "../synth/ConfigLoader"
 import { prompt } from "../services/Gemini"
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+
 
 const configLoader = ConfigLoader.getConfigLoader();
 
@@ -440,31 +443,73 @@ function EchoSettings() {
 function PromptMenu({ setFocus }) {
     const [text, setText] = useState("");
 
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    if (!browserSupportsSpeechRecognition) {
+        return <span>Browser doesn't support speech recognition.</span>;
+    }
+
+    function handleSubmit(event) {
+        event.preventDefault();
+        // do the shit
+        const message = text || transcript;
+        setText("");
+        resetTranscript();
+        if (!message) return;
+        prompt(message)
+            .then(
+                (value: SynthConfig) => {
+                    console.log("set", value);
+                    
+                    ConfigLoader.getConfigLoader().load(value);
+                }
+            )
+    }
+
     return (
         <div className="  border w-[45vw] border-black">
             <ul className=" h-full">
-                <li className="h-full ">
-
-                    <textarea
-                        className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"
-                        placeholder="SEND A MESSAGE"
-                        value={text}
-                        onChange={e => setText(e.target.value)}
-                        onFocus={() => setFocus("prompt")}
-                        onBlur={() => setFocus("main")}
-                    />
+                <li className="h-full p-4">
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            className="h-full w-full pb-[75%] placeholder:m border border-black p-1"
+                            type="text"
+                            placeholder="SEND A MESSAGE"
+                            value={text || transcript}
+                            onChange={(e) => {
+                                resetTranscript()
+                                setText(e.target.value)
+                            }}
+                            onFocus={() => {
+                                setFocus("prompt")
+                            }}
+                            onBlur={() => setFocus("main")}
+                        />
+                        <button className="text-lg shadow-lg mt-2 border border-black p-1"
+                            onMouseDown={() => {
+                                SpeechRecognition.startListening()
+                                setText("");
+                            }}
+                            onMouseUp={SpeechRecognition.stopListening}>
+                            LISTEN
+                        </button>
+                        <button type="submit" className="ml-[60%] text-lg shadow-lg mt-2 border border-black p-1">SUBMIT</button>
+                        <button className=" text-lg shadow-lg mt-2 border border-black p-1" onClick={() => { configLoader.load(DEFAULT_SYNTH_CONFIG) }}>
+                            RESET
+                        </button>
+                    </form>
+                    {
+                        listening ?
+                            <img src="https://www.svgrepo.com/show/1902/microphone.svg" className="h-[100px] ml-[36%] mt-[10%]" /> :
+                            <></>
+                    }
                 </li>
-                <button onClick={() => {
-                    setText("")
-                    prompt(text)
-                        .then(
-                            (config: SynthConfig) => {
-                                ConfigLoader.getConfigLoader().load(config);
-                                console.log("set", config);
-                            }
-                        )
-                }}>submit</button>
             </ul>
-        </div>
+        </div >
     )
 }
