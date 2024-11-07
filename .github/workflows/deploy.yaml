@@ -23,7 +23,8 @@ jobs:
 
       - name: Build project
         run: npm run build
-        env: ${{ secrets.VITE_GEMINI_API_KEY }}
+        env: 
+          ${{ secrets.VITE_GEMINI_API_KEY }}
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v3
