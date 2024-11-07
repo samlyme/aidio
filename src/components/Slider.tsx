@@ -26,7 +26,7 @@
 //         height: height,
 //         color: color,
 //         borderRadius: borderRadius,
-        
+
 //         '& .MuiSlider-thumb': {
 //           opacity: thumbOpacity,
 //         },
@@ -40,7 +40,6 @@
 
 
 import Slider from '@mui/material/Slider';
-import { useState } from 'react';
 
 const CustomSlider = ({
   width = 200,
@@ -50,50 +49,13 @@ const CustomSlider = ({
   thumbOpacity = 0,
   min = 0,
   max = 1,
-<<<<<<< Updated upstream
-  // step = 0.01,
-=======
-  step = 0.01,
-  value: initialValue = 0,
-  onChange,
->>>>>>> Stashed changes
+  value,
   ...props
 }) => {
-  const [value, setValue] = useState(initialValue);
-
-  const handleSliderChange = (event, newValue) => {
-    setValue(newValue);
-    if (onChange) {
-      onChange(event, newValue);
-    }
-  };
 
   return (
-<<<<<<< Updated upstream
-    <Slider
-      sx={{
-        width: width,
-        height: height,
-        color: color,
-        borderRadius: borderRadius,
-        '& .MuiSlider-thumb': {
-          opacity: thumbOpacity,
-        },
-      }}
-      min={min}
-      max={max}
-      step={(max-min)/100}
-      {...props}
-    />
-=======
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <>
       <Slider
-        value={value}
-        onChange={handleSliderChange}
-        min={min}
-        max={max}
-        step={step}
-        valueLabelDisplay="auto"
         sx={{
           width: width,
           height: height,
@@ -103,11 +65,13 @@ const CustomSlider = ({
             opacity: thumbOpacity,
           },
         }}
-        {...props}
-      />
-      <span style={{ marginLeft: 7}}>{value}</span> 
-    </div>
->>>>>>> Stashed changes
+        min={min}
+        max={max}
+        value={value}
+        step={(max - min) / 100}
+        {...props} />
+        <span className="ml-7">{value}</span>
+    </>
   );
 };
 
