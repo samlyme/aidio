@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { schema } from "./Contants";
+import { schema } from "./Constants";
 import { SynthConfig } from "../synth/Types";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
@@ -11,11 +11,23 @@ const model = genAI.getGenerativeModel({
     responseMimeType: "application/json",
     responseSchema: schema,
   },
+  systemInstruction: `
+  Always change all settings.
+
+  Make 2 unisons.`,
 });
 
 
-export async function prompt(message: string): Promise<SynthConfig> {
-  const result = await model.generateContent(message);
-
-  return JSON.parse(result.response.text());
+export function prompt(message: string): Promise<SynthConfig> {
+  return model.generateContent(message)
+    .then(
+      (result) => {
+        return result.response.text();
+      }
+    )
+    .then(
+      (text) => {
+        return JSON.parse(text);
+      }
+    )
 }

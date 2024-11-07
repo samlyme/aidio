@@ -2,11 +2,12 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
 import CustomSlider from "./Slider"
 import { useEffect, useState } from "react"
-import { WaveForm } from "../synth/Types"
+import { SynthConfig, WaveForm } from "../synth/Types"
 import Synth from "../synth/Synth"
 import Oscilloscope from "./Oscilloscope"
 import { DEFAULT_DETUNE, DEFAULT_ECHO_DELAY, DEFAULT_ECHO_FEEDBACK, DEFAULT_FILTER_ATTACK, DEFAULT_FILTER_DECAY, DEFAULT_FILTER_FREQUENCY, DEFAULT_FILTER_RELEASE, DEFAULT_FILTER_RESONANCE, DEFAULT_FILTER_SUSTAIN, DEFAULT_MASTER_VOLUME, DEFAULT_VOLUME_ATTACK, DEFAULT_VOLUME_DECAY, DEFAULT_VOLUME_RELEASE, DEFAULT_VOLUME_SUSTAIN, MAX_DETUNE, MAX_FILTER_ATTACK, MAX_FILTER_DECAY, MAX_FILTER_FREQUENCY, MAX_FILTER_RELEASE, MAX_FILTER_RESONANCE, MAX_FILTER_SUSTAIN, MAX_MASTER_VOLUME, MAX_VOLUME_ATTACK, MAX_VOLUME_DECAY, MAX_VOLUME_RELEASE, MAX_VOLUME_SUSTAIN, MIN_DETUNE, MIN_FILTER_ATTACK, MIN_FILTER_DECAY, MIN_FILTER_FREQUENCY, MIN_FILTER_RELEASE, MIN_FILTER_RESONANCE, MIN_FILTER_SUSTAIN, MIN_MASTER_VOLUME, MIN_VOLUME_ATTACK, MIN_VOLUME_DECAY, MIN_VOLUME_RELEASE, MIN_VOLUME_SUSTAIN } from "../synth/Constants"
 import ConfigLoader from "../synth/ConfigLoader"
+import { prompt } from "../services/Gemini"
 
 const configLoader = ConfigLoader.getConfigLoader();
 
@@ -167,7 +168,6 @@ function UnisonSettings({ waveform, setWaveForm, detune, setDetune }) {
     ) => {
         if (newDetune !== null) {
             setDetune(newDetune);
-            console.log(newDetune);
 
         }
     };
@@ -410,7 +410,6 @@ function EchoSettings() {
         setDelay(newDelay)
 
         synth.setEchoDelay(newDelay);
-        console.log(synth.getConfig());
 
     };
 
@@ -419,7 +418,6 @@ function EchoSettings() {
         newFeedback: number,
     ) => {
         setFeedback(newFeedback)
-        console.log(newFeedback);
 
         synth.setEchoFeedback(newFeedback);
     };
@@ -440,17 +438,32 @@ function EchoSettings() {
 }
 
 function PromptMenu({ setFocus }) {
+    const [text, setText] = useState("");
+
     return (
         <div className="  border w-[45vw] border-black">
             <ul className=" h-full">
                 <li className="h-full ">
+
                     <textarea
                         className=" resize-none p-10 h-full w-full flex items-end pl-2 pb-0 text-wrap"
                         placeholder="SEND A MESSAGE"
+                        value={text}
+                        onChange={e => setText(e.target.value)}
                         onFocus={() => setFocus("prompt")}
                         onBlur={() => setFocus("main")}
                     />
                 </li>
+                <button onClick={() => {
+                    setText("")
+                    prompt(text)
+                        .then(
+                            (config: SynthConfig) => {
+                                ConfigLoader.getConfigLoader().load(config);
+                                console.log("set", config);
+                            }
+                        )
+                }}>submit</button>
             </ul>
         </div>
     )
