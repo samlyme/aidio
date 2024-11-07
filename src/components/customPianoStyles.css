@@ -10,6 +10,9 @@
   display: flex;
 }
 
+
+
+
 /*
  * Styles of accidental notes (flat or sharp)
  */
@@ -17,9 +20,9 @@
   background: #555;
   border: 1px solid #fff;
   border-top: 1px solid transparent;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 0px 0px;
   cursor: pointer;
-  height: 66%;
+  height: 55%;
   /* Overlay on top of natural keys */
   z-index: 1;
   /* Use absolute positioning along with inline styles specified in JS to put keys in correct locations. */
@@ -27,13 +30,15 @@
   top: 0;
 }
 
+
+
 /*
  * Styles of natural notes (white keys)
  */
 .ReactPiano__Key--natural {
   background: #f6f5f3;
   border: 1px solid #888;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 0px 0px;
   cursor: pointer;
   z-index: 0;
   /*
@@ -53,20 +58,21 @@
  * Styles of "active" or pressed-down keys
  */
 .ReactPiano__Key--active {
-  background: #3ac8da;
+  /* background: #3ac8da; */
 }
 
 .ReactPiano__Key--active.ReactPiano__Key--accidental {
-  border: 1px solid #fff;
-  border-top: 1px solid #3ac8da;
+  /* border: 1px solid #fff; */
+  /* border-top: 1px solid #3ac8da; */
   /* Slight height reduction for "pushed-down" effect */
-  height: 65%;
+  /* height: 65%; */
 }
 
+
 .ReactPiano__Key--active.ReactPiano__Key--natural {
-  border: 1px solid #3ac8da;
+  /* border: 1px solid #3ac8da; */
   /* Slight height reduction for "pushed-down" effect */
-  height: 98%;
+  /* height: 98%; */
 }
 
 /*
@@ -92,7 +98,7 @@
 }
 
 .ReactPiano__NoteLabel {
-  font-size: 18px;
+  font-size: 12px;
   text-align: center;
   text-transform: capitalize;
   /* Disable text selection */
@@ -109,6 +115,6 @@
   margin-bottom: 3px;
 }
 
-.ReactPiano__NoteLabel--natural.ReactPiano__NoteLabel--active {
+/* .ReactPiano__NoteLabel--natural.ReactPiano__NoteLabel--active {
   color: #f8e8d5;
-}
+} */
