@@ -1,7 +1,8 @@
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
-import 'react-piano/dist/styles.css';
+// import 'react-piano/dist/styles.css';
 import Synth from '../synth/Synth';
 import { focus } from '../Context';
+import './customPianoStyles.css';  // import a set of overrides
 
 export default function InteractivePiano({ focus }: { focus: focus }) {
     const firstNote = MidiNumbers.fromNote('c3');
