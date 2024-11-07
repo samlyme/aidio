@@ -112,8 +112,6 @@ export default class Synth {
     }
 
     setFilterResonance(resonance: number) {
-        console.log(resonance);
-         
         this.config.filter.resonance = resonance;
     }
 

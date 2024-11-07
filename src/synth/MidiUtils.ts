@@ -4,7 +4,6 @@ export function handleMIDIAccessSuccess(midiAccess: MIDIAccess): void {
     midiAccess.addEventListener("statechange", (event: Event) => updateMIDIDevices(event));
 
     const inputs: MIDIInputMap = midiAccess.inputs;
-    console.log("inputs", inputs);
 
 
     inputs.forEach((input: MIDIInput) => {

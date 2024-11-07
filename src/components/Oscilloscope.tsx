@@ -11,8 +11,6 @@ export default function Oscilloscope() {
 
     useEffect(() => {
         contextRef.current = canvasRef.current.getContext("2d");
-        console.log(canvasRef.current);
-        
         draw();
     })
 
